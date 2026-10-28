@@ -2,6 +2,7 @@ import cors from 'cors';
 import express, { type Router } from 'express';
 import { leerEnv } from './config/env';
 import { errorHandler, rutaNoEncontrada } from './errors/errorHandler';
+import { authRouter } from './modules/auth';
 
 /**
  * PUNTO ÚNICO DE REGISTRO DE MÓDULOS.
@@ -9,7 +10,7 @@ import { errorHandler, rutaNoEncontrada } from './errors/errorHandler';
  * Ver docs/contribucion.md.
  */
 const modulos: Array<{ ruta: string; router: Router }> = [
-  // { ruta: '/api/auth', router: authRouter },   // HU-01 / HU-02
+  { ruta: '/api/auth', router: authRouter }, // HU-01 / HU-02
 ];
 
 export function crearApp() {
