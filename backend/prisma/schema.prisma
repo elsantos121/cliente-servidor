@@ -1,0 +1,12 @@
+// Esquema de la base de datos del foro.
+// Los modelos se agregan de forma incremental, uno por historia de usuario (ver docs/historias-usuario.md),
+// cada uno con su propia migración: `npx prisma migrate dev --name <descripcion>`.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
