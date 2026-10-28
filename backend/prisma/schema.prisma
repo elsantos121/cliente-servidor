@@ -10,3 +10,21 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// HU-01 · Registro de estudiantes
+enum Rol {
+  ESTUDIANTE
+  ADMIN
+}
+
+model Usuario {
+  id           Int      @id @default(autoincrement())
+  nombre       String   @db.VarChar(100)
+  /// Se guarda siempre en minúsculas: la unicidad no distingue mayúsculas.
+  email        String   @unique @db.VarChar(254)
+  passwordHash String   @map("password_hash")
+  rol          Rol      @default(ESTUDIANTE)
+  creadoEn     DateTime @default(now()) @map("creado_en")
+
+  @@map("usuarios")
+}
