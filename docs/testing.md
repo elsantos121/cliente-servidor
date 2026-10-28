@@ -75,3 +75,13 @@ Se corrigió `.env.test` y las pruebas pasaron sin tocar la base de desarrollo.
 **Auditoría de dependencias (`npm audit`):** la instalación inicial reportó 11 vulnerabilidades, todas en herramientas de desarrollo. Se actualizó Vitest 3.2.7 → 4.1.12 y Cucumber 11.3.0 → 12.9.0 (versiones mínimas sin vulnerabilidades, sin saltar a versiones mayores con cambios incompatibles) y se volvieron a ejecutar todas las pruebas con resultado verde.
 
 **Limitación conocida:** quedan 3 avisos *high* por `deepmerge-ts` 7.x, usado internamente por la CLI de Prisma 6 (`@prisma/config`). Afecta solo a la herramienta de línea de comandos (no a la API en ejecución) y es una denegación de servicio con objetos recursivos, que no se aplica a este uso. La corrección requiere migrar a Prisma 7, que tiene cambios incompatibles; se evaluará como tarea separada.
+
+### Fase 2 — Frontend generado (2026-10-28)
+
+Se generó con Angular CLI 21 (`@angular/core` ^21.2, TypeScript ~5.9, Vitest ^4) porque Angular 22 exige Node ≥ 22.22.3 y el equipo usa Node 22.18.0. Angular 21 sigue con soporte y es compatible con esa versión.
+
+| Comando | Resultado |
+|---|---|
+| `npm test -- --watch=false` (frontend) | 1 archivo, **2 pruebas pasadas** (`app.spec.ts`) |
+
+Frontend y backend usan el mismo runner de pruebas (Vitest 4).
