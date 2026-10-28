@@ -121,6 +121,32 @@ Códigos usados: `200`, `201`, `204`, `400` validación, `401` no autenticado, `
 
 La documentación detallada de cada endpoint (cuerpo, respuestas, errores) se completa a medida que se implementa cada historia.
 
+### Endpoints implementados
+
+#### `POST /api/auth/registro` (HU-01) · público
+
+Crea una cuenta de estudiante. Los campos desconocidos se descartan: un `rol` enviado por el cliente se ignora y la cuenta siempre se crea con rol `ESTUDIANTE`.
+
+Cuerpo:
+
+```json
+{ "nombre": "Ana Pérez", "email": "ana@uni.edu", "password": "secreta123" }
+```
+
+| Campo | Regla |
+|---|---|
+| `nombre` | obligatorio, 2–100 caracteres (se recortan espacios) |
+| `email` | obligatorio, correo válido, máx. 254; se guarda en minúsculas |
+| `password` | obligatorio, 8–72 caracteres (límite de bcrypt); se guarda solo el hash |
+
+Respuestas:
+
+| Código | Cuándo | Cuerpo |
+|---|---|---|
+| `201` | cuenta creada | `{ "usuario": { "id", "nombre", "email", "rol": "ESTUDIANTE", "creadoEn" } }` (sin contraseña ni hash) |
+| `400` | falta un campo o no cumple la regla | `{ "error": { "codigo": "VALIDACION", "mensaje": "Datos inválidos", "detalles": { "<campo>": "<mensaje>" } } }` |
+| `409` | el correo ya existe (sin distinguir mayúsculas) | `{ "error": { "codigo": "CONFLICTO", "mensaje": "El correo ya está registrado" } }` |
+
 ## 6. Seguridad (alcance académico)
 
 **Se implementa:** hash bcrypt · JWT con expiración · autorización por rol y por dueño en el backend · validación de entrada con Zod · manejo centralizado de errores · consultas mediante Prisma · CORS limitado al origen del frontend · `.env` excluido de Git · el registro siempre asigna `ESTUDIANTE` · primer admin creado por seed.

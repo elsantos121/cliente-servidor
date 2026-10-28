@@ -85,3 +85,36 @@ Se generó con Angular CLI 21 (`@angular/core` ^21.2, TypeScript ~5.9, Vitest ^4
 | `npm test -- --watch=false` (frontend) | 1 archivo, **2 pruebas pasadas** (`app.spec.ts`) |
 
 Frontend y backend usan el mismo runner de pruebas (Vitest 4).
+
+### Fase 3 · Iteración 1 — HU-01 Registro (2026-10-28)
+
+Rama `feature/HU-01-registro`. Ejecutado en Windows (Node v22.18.0, PostgreSQL local, base `foro_test`). Cada paso quedó en su propio commit.
+
+| Paso | Commit | Comando | Resultado real |
+|---|---|---|---|
+| Gherkin | `test(HU-01): escenarios BDD de registro` | `npm run test:bdd` | **falla:** 8 escenarios (6 *undefined*, 2 passed), 20 pasos sin definir |
+| RED servicio | `test(HU-01): servicio de registro ... (RED)` | `npx vitest run tests/integration/auth.service.test.ts` | **falla:** `Cannot find module '../../src/modules/auth/auth.service'` |
+| GREEN servicio | `feat(HU-01): modelo Usuario, migracion y servicio (GREEN)` | ídem | **4 pruebas pasadas**; migración `20261028225558_crear_usuarios` aplicada |
+| RED endpoint | `test(HU-01): endpoint POST /api/auth/registro (RED)` | `npx vitest run tests/integration/auth.routes.test.ts` | **6 de 6 fallan:** `expected 404 to be 201` (la ruta no existía) |
+| GREEN endpoint | `feat(HU-01): endpoint ... con validacion Zod (GREEN)` | ídem | **6 pruebas pasadas** |
+| Pasos BDD | `test(HU-01): conectar pasos de Cucumber` | `npm run test:bdd` | **8 escenarios / 31 pasos pasados** |
+| REFACTOR | `refactor(HU-01): tipar el registro desde el esquema Zod ...` | `npm test` + `npm run test:bdd` | **4 archivos / 16 pruebas** y **8 escenarios** pasados |
+| Pantalla | `feat(HU-01): pagina de registro en Angular` | `npx ng test --watch=false` | **2 archivos / 8 pruebas pasadas** (`registro.spec.ts` 6, `app.spec.ts` 2) |
+
+Verificación completa al cierre de la iteración:
+
+| Comando | Resultado |
+|---|---|
+| backend `npm run typecheck` | sin errores |
+| backend `npm run lint` | sin errores |
+| backend `npm test` | 4 archivos, **16 pruebas pasadas** |
+| backend `npm run test:bdd` | **8 escenarios / 31 pasos pasados** |
+| backend `npm run build` | sin errores |
+| frontend `npx ng test --watch=false` | 2 archivos, **8 pruebas pasadas** |
+| frontend `npx ng build` | sin errores (registro en un chunk diferido de 39 kB) |
+
+Prueba manual contra la API en ejecución (`npm run dev`, base `foro_dev`): registro con `"rol": "ADMIN"` → `201` con rol `ESTUDIANTE` y cabecera `Access-Control-Allow-Origin: http://localhost:4200`; el mismo correo en mayúsculas → `409`; *preflight* CORS `OPTIONS` → `204`.
+
+**Pendiente:** recorrer la pantalla `/registro` en el navegador con `npm start` (no se pudo levantar `ng serve` desde la sesión de Claude por falta de memoria del entorno).
+
+**Dependencia agregada:** `bcryptjs` 3.0.3 (trae sus propios tipos). `npm audit` sigue mostrando solo los 3 avisos conocidos de `deepmerge-ts`.
