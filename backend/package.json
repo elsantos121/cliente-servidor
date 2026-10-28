@@ -1,0 +1,44 @@
+{
+  "name": "foro-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "API REST del foro universitario (Cliente Servidor Fitur Test XP)",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:bdd": "cucumber-js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev"
+  },
+  "engines": {
+    "node": ">=20.19"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.0",
+    "express": "^5.1.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@cucumber/cucumber": "^11.0.0",
+    "@eslint/js": "^9.0.0",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "@types/supertest": "^6.0.0",
+    "eslint": "^9.0.0",
+    "prisma": "^6.0.0",
+    "supertest": "^7.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^3.2.0"
+  }
+}
