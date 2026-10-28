@@ -6,15 +6,15 @@
 
 ## Resumen y orden de implementación
 
-| Orden | ID | Historia | Prioridad | Depende de |
-|---|---|---|---|---|
-| 1 | HU-01 | Registro de estudiantes | Alta | — |
-| 2 | HU-02 | Inicio de sesión | Alta | HU-01 |
-| 3 | HU-06a | Gestión de categorías (admin) | Alta | HU-02 |
-| 4 | HU-03 | Publicaciones (crear, consultar, editar, eliminar) | Alta | HU-02, HU-06a |
-| 5 | HU-04 | Comentarios | Media | HU-03 |
-| 6 | HU-05 | Denuncia de publicaciones | Media | HU-03 |
-| 7 | HU-06b | Moderación de reportes (admin) | Media | HU-05 |
+| Orden | ID | Historia | Prioridad | Depende de | Estado |
+|---|---|---|---|---|---|
+| 1 | HU-01 | Registro de estudiantes | Alta | — | Implementada (pendiente PR a develop) |
+| 2 | HU-02 | Inicio de sesión | Alta | HU-01 | Implementada (pendiente PR a develop) |
+| 3 | HU-06a | Gestión de categorías (admin) | Alta | HU-02 | Pendiente |
+| 4 | HU-03 | Publicaciones (crear, consultar, editar, eliminar) | Alta | HU-02, HU-06a | Pendiente |
+| 5 | HU-04 | Comentarios | Media | HU-03 | Pendiente |
+| 6 | HU-05 | Denuncia de publicaciones | Media | HU-03 | Pendiente |
+| 7 | HU-06b | Moderación de reportes (admin) | Media | HU-05 | Pendiente |
 
 HU-06 original ("gestionar categorías y revisar reportes") se dividió en HU-06a y HU-06b por ser demasiado grande: son dos módulos independientes y la segunda depende de HU-05.
 
@@ -35,6 +35,7 @@ Una historia está terminada cuando:
 ## HU-01 — Registro de estudiantes
 
 - **Prioridad:** Alta
+- **Estado:** implementada en `feature/HU-01-registro` (API + pantalla `/registro`); falta integrarla a `develop`.
 - **Descripción:** Como estudiante, quiero registrarme con mi nombre, correo y contraseña para participar en el foro.
 
 **Criterios de aceptación**
@@ -48,7 +49,7 @@ Una historia está terminada cuando:
 - ❌ Campos vacíos / correo mal formado / contraseña corta.
 - ❌ Intento de escalar privilegios enviando `"rol": "ADMIN"` → se crea como `ESTUDIANTE`.
 
-**Pruebas relacionadas:** `auth.service.test.ts` (hash, duplicado), `auth.routes.test.ts` (201/400/409), `features/registro.feature`.
+**Pruebas relacionadas:** `tests/integration/auth.service.test.ts` (hash, minúsculas, duplicado), `tests/integration/auth.routes.test.ts` (201/400/409, rol ignorado), `features/registro.feature` (6 escenarios), `frontend/src/app/pages/registro/registro.spec.ts`.
 
 **Dependencias:** ninguna.
 
