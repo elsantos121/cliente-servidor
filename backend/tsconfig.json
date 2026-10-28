@@ -16,5 +16,5 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["src", "tests", "features", "prisma", "vitest.config.ts"]
+  "include": ["src", "tests", "features", "prisma", "vitest.config.mts"]
 }
