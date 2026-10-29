@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt, { type SignOptions } from 'jsonwebtoken';
 import type { z } from 'zod';
 import { leerEnv } from '../../config/env';
+import { esViolacionUnica } from '../../db/errores';
 import { prisma } from '../../db/prisma';
 import { AppError } from '../../errors/AppError';
 import type { esquemaLogin, esquemaRegistro } from './auth.schemas';
@@ -24,16 +25,18 @@ const COSTO_BCRYPT = 10;
 /** HU-01: crea una cuenta de ESTUDIANTE. El rol nunca se toma de los datos recibidos. */
 export async function registrar(datos: DatosRegistro) {
   const email = datos.email.toLowerCase();
-  const existente = await prisma.usuario.findUnique({ where: { email } });
-  if (existente) {
-    throw AppError.conflicto('El correo ya está registrado');
-  }
-
   const passwordHash = await bcrypt.hash(datos.password, COSTO_BCRYPT);
-  return prisma.usuario.create({
-    data: { nombre: datos.nombre, email, passwordHash, rol: 'ESTUDIANTE' },
-    select: camposPublicosUsuario,
-  });
+  try {
+    return await prisma.usuario.create({
+      data: { nombre: datos.nombre, email, passwordHash, rol: 'ESTUDIANTE' },
+      select: camposPublicosUsuario,
+    });
+  } catch (error) {
+    if (esViolacionUnica(error)) {
+      throw AppError.conflicto('El correo ya está registrado');
+    }
+    throw error;
+  }
 }
 
 /** Lo que el token dice de quien hace la solicitud. */
