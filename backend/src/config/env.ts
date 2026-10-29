@@ -9,6 +9,8 @@ const esquemaEnv = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(3000),
   CORS_ORIGIN: z.string().min(1).default('http://localhost:4200'),
+  JWT_SECRET: z.string().min(16, 'debe tener al menos 16 caracteres'),
+  JWT_EXPIRES_IN: z.string().min(1).default('2h'),
 });
 
 export type Env = z.infer<typeof esquemaEnv>;
