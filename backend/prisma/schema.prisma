@@ -28,3 +28,14 @@ model Usuario {
 
   @@map("usuarios")
 }
+
+// HU-06a · Gestión de categorías
+model Categoria {
+  id                Int      @id @default(autoincrement())
+  nombre            String   @db.VarChar(50)
+  /// Nombre recortado y en minúsculas: hace que la unicidad no distinga mayúsculas.
+  nombreNormalizado String   @unique @map("nombre_normalizado") @db.VarChar(50)
+  creadoEn          DateTime @default(now()) @map("creado_en")
+
+  @@map("categorias")
+}
