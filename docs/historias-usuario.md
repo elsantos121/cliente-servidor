@@ -58,6 +58,7 @@ Una historia está terminada cuando:
 ## HU-02 — Inicio de sesión
 
 - **Prioridad:** Alta
+- **Estado:** implementada en `feature/HU-02-login` (API, seed del admin, pantalla `/login`, interceptor y guard); falta integrarla a `develop`.
 - **Descripción:** Como usuario registrado, quiero iniciar sesión para acceder a las funciones autorizadas según mi rol.
 
 **Criterios de aceptación**
@@ -69,7 +70,7 @@ Una historia está terminada cuando:
 - ✅ Login de estudiante; ✅ login del administrador creado por el seed.
 - ❌ Contraseña incorrecta; ❌ correo inexistente; ❌ token alterado.
 
-**Pruebas relacionadas:** `auth.service.test.ts`, `auth.routes.test.ts`, `middlewares/autenticar.test.ts`, `features/login.feature`.
+**Pruebas relacionadas:** `tests/integration/auth.login.service.test.ts` (login, tokens, seed), `tests/integration/login.routes.test.ts` (200/400/401, `/me`), `tests/unit/autenticar.test.ts` (401/403), `features/login.feature` (7 escenarios), `frontend/src/app/pages/login/login.spec.ts`, `frontend/src/app/core/auth.spec.ts`.
 
 **Dependencias:** HU-01.
 
