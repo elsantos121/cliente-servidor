@@ -42,6 +42,7 @@ describe('App', () => {
 
     expect(compilado.querySelector('.usuario')?.textContent).toContain('Administrador');
     expect(compilado.querySelector('.etiqueta')?.textContent).toContain('admin');
+    expect(compilado.querySelector('nav a[href="/admin/categorias"]')).toBeTruthy();
     compilado.querySelector<HTMLButtonElement>('.enlace')!.click();
     await fixture.whenStable();
 

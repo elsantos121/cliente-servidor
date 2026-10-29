@@ -15,3 +15,9 @@ export interface ErrorApi {
   mensaje: string;
   detalles?: Record<string, string>;
 }
+
+export interface Categoria {
+  id: number;
+  nombre: string;
+  creadoEn: string;
+}
