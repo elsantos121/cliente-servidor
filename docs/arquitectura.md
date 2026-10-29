@@ -147,6 +147,35 @@ Respuestas:
 | `400` | falta un campo o no cumple la regla | `{ "error": { "codigo": "VALIDACION", "mensaje": "Datos inválidos", "detalles": { "<campo>": "<mensaje>" } } }` |
 | `409` | el correo ya existe (sin distinguir mayúsculas) | `{ "error": { "codigo": "CONFLICTO", "mensaje": "El correo ya está registrado" } }` |
 
+#### `POST /api/auth/login` (HU-02) · público
+
+Cuerpo: `{ "email": "ana@uni.edu", "password": "secreta123" }` (el correo no distingue mayúsculas).
+
+| Código | Cuándo | Cuerpo |
+|---|---|---|
+| `200` | credenciales válidas | `{ "token": "<JWT>", "usuario": { "id", "nombre", "email", "rol", "creadoEn" } }` |
+| `400` | falta el correo o la contraseña | `VALIDACION` con `detalles` por campo |
+| `401` | correo inexistente **o** contraseña incorrecta (mismo mensaje y mismo tiempo de respuesta) | `{ "error": { "codigo": "NO_AUTENTICADO", "mensaje": "Correo o contraseña incorrectos" } }` |
+
+El token es un JWT HS256 firmado con `JWT_SECRET`, con `sub` = id del usuario, `rol` y vencimiento `JWT_EXPIRES_IN` (por defecto `2h`). Se envía en cada solicitud protegida como `Authorization: Bearer <token>`. No hay refresh tokens: al vencer, se vuelve a iniciar sesión.
+
+#### `GET /api/usuarios/me` (HU-02) · autenticado
+
+Devuelve `{ "usuario": { "id", "nombre", "email", "rol", "creadoEn" } }` con `200`. Responde `401` sin token, con token alterado, vencido o firmado con otro secreto, y si la cuenta del token ya no existe.
+
+#### Middlewares de autorización (HU-02)
+
+| Middleware | Uso | Error |
+|---|---|---|
+| `autenticar` | exige un `Bearer` válido y deja `req.usuario = { id, rol }` | `401 NO_AUTENTICADO` |
+| `autorizar(...roles)` | después de `autenticar`; exige uno de los roles | `403 PROHIBIDO` (`401` si no hay sesión) |
+
+Ejemplo para HU-06a: `router.post('/', autenticar, autorizar('ADMIN'), validar(esquema), controlador)`.
+
+#### Administrador inicial (seed)
+
+`npm run prisma:seed` crea o actualiza el administrador con `ADMIN_NOMBRE`, `ADMIN_EMAIL` y `ADMIN_PASSWORD` del `.env`. Es idempotente y es el único camino para tener un `ADMIN`.
+
 ## 6. Seguridad (alcance académico)
 
 **Se implementa:** hash bcrypt · JWT con expiración · autorización por rol y por dueño en el backend · validación de entrada con Zod · manejo centralizado de errores · consultas mediante Prisma · CORS limitado al origen del frontend · `.env` excluido de Git · el registro siempre asigna `ESTUDIANTE` · primer admin creado por seed.
