@@ -1,7 +1,13 @@
 <header class="cabecera">
   <a routerLink="/" class="marca">Foro universitario</a>
   <nav aria-label="Principal">
-    <a routerLink="/registro">Crear cuenta</a>
+    @if (sesion.usuario(); as usuario) {
+      <span class="usuario">{{ usuario.nombre }}@if (sesion.esAdmin()) { <span class="etiqueta">admin</span>}</span>
+      <button type="button" class="enlace" (click)="cerrarSesion()">Cerrar sesión</button>
+    } @else {
+      <a routerLink="/login">Iniciar sesión</a>
+      <a routerLink="/registro">Crear cuenta</a>
+    }
   </nav>
 </header>
 
