@@ -84,7 +84,7 @@ Usuario 1──* Reporte *──1 Publicacion
 | Tabla | Campos principales | Restricciones |
 |---|---|---|
 | `usuarios` | id, nombre, email, password_hash, rol, creado_en | PK id · `UNIQUE(email)` (guardado en minúsculas) · rol ∈ {ESTUDIANTE, ADMIN} |
-| `categorias` | id, nombre, creado_en | PK id · `UNIQUE(nombre)` |
+| `categorias` | id, nombre, nombre_normalizado, creado_en | PK id · `UNIQUE(nombre_normalizado)` (nombre en minúsculas) |
 | `publicaciones` | id, titulo, contenido, autor_id, categoria_id, creado_en, actualizado_en | FK autor → usuarios · FK categoría → categorias (`RESTRICT`) |
 | `comentarios` | id, contenido, autor_id, publicacion_id, creado_en | FK autor · FK publicación (`CASCADE`) |
 | `reportes` | id, motivo, estado, autor_id, publicacion_id, creado_en, actualizado_en | estado ∈ {PENDIENTE, RESUELTO, DESCARTADO} · `UNIQUE(autor_id, publicacion_id)` · FK publicación (`CASCADE`) |
@@ -171,6 +171,28 @@ Devuelve `{ "usuario": { "id", "nombre", "email", "rol", "creadoEn" } }` con `20
 | `autorizar(...roles)` | después de `autenticar`; exige uno de los roles | `403 PROHIBIDO` (`401` si no hay sesión) |
 
 Ejemplo para HU-06a: `router.post('/', autenticar, autorizar('ADMIN'), validar(esquema), controlador)`.
+
+#### `GET /api/categorias` (HU-06a) · público
+
+Devuelve `200` con `{ "categorias": [ { "id", "nombre", "creadoEn" } ] }`, ordenadas alfabéticamente.
+
+#### `POST /api/categorias` (HU-06a) · ADMIN
+
+Cuerpo: `{ "nombre": "Matemática" }` (se recortan espacios; 2–50 caracteres).
+
+| Código | Cuándo | Cuerpo |
+|---|---|---|
+| `201` | categoría creada | `{ "categoria": { "id", "nombre", "creadoEn" } }` |
+| `400` | nombre ausente, vacío o fuera de 2–50 | `VALIDACION` con `detalles.nombre` |
+| `401` | sin token o token inválido | `NO_AUTENTICADO` |
+| `403` | el usuario no es ADMIN | `PROHIBIDO` |
+| `409` | ya existe una categoría con ese nombre, sin distinguir mayúsculas | `{ "error": { "codigo": "CONFLICTO", "mensaje": "Ya existe una categoría con ese nombre" } }` |
+
+La tabla `categorias` guarda `nombre` (como se escribió) y `nombre_normalizado` (recortado y en minúsculas) con `UNIQUE`: así la unicidad no distingue mayúsculas sin depender de índices funcionales que Prisma no modela.
+
+#### Duplicados y concurrencia
+
+Registro (HU-01) y categorías (HU-06a) no consultan antes de crear: intentan el `INSERT` y traducen la violación de `UNIQUE` (código Prisma `P2002`) a `409` con `esViolacionUnica()` de `src/db/errores.ts`. Así dos solicitudes iguales simultáneas dan un `201` y un `409`, nunca un `500`.
 
 #### Administrador inicial (seed)
 

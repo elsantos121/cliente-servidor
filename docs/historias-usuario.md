@@ -10,7 +10,7 @@
 |---|---|---|---|---|---|
 | 1 | HU-01 | Registro de estudiantes | Alta | — | Implementada (pendiente PR a develop) |
 | 2 | HU-02 | Inicio de sesión | Alta | HU-01 | Implementada (pendiente PR a develop) |
-| 3 | HU-06a | Gestión de categorías (admin) | Alta | HU-02 | Pendiente |
+| 3 | HU-06a | Gestión de categorías (admin) | Alta | HU-02 | Implementada (pendiente PR a develop) |
 | 4 | HU-03 | Publicaciones (crear, consultar, editar, eliminar) | Alta | HU-02, HU-06a | Pendiente |
 | 5 | HU-04 | Comentarios | Media | HU-03 | Pendiente |
 | 6 | HU-05 | Denuncia de publicaciones | Media | HU-03 | Pendiente |
@@ -79,6 +79,7 @@ Una historia está terminada cuando:
 ## HU-06a — Gestión de categorías
 
 - **Prioridad:** Alta (las publicaciones requieren categoría)
+- **Estado:** implementada en `feature/HU-06a-categorias` (API + panel `/admin/categorias`); falta integrarla a `develop`.
 - **Descripción:** Como administrador, quiero crear categorías para mantener organizado el foro.
 
 **Criterios de aceptación**
@@ -88,7 +89,7 @@ Una historia está terminada cuando:
 
 **Escenarios:** ✅ admin crea "Matemática"; ✅ listado; ❌ duplicado; ❌ estudiante intenta crear; ❌ nombre vacío.
 
-**Pruebas relacionadas:** `categorias.service.test.ts`, `categorias.routes.test.ts`, `features/categorias.feature`.
+**Pruebas relacionadas:** `tests/integration/categorias.service.test.ts`, `tests/integration/categorias.routes.test.ts` (200/201/400/401/403/409), `tests/integration/duplicados.concurrentes.test.ts`, `features/categorias.feature` (6 escenarios), `frontend/src/app/pages/admin-categorias/admin-categorias.spec.ts`.
 
 **Dependencias:** HU-02.
 
