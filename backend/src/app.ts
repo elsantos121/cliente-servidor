@@ -3,6 +3,7 @@ import express, { type Router } from 'express';
 import { leerEnv } from './config/env';
 import { errorHandler, rutaNoEncontrada } from './errors/errorHandler';
 import { authRouter } from './modules/auth';
+import { usuariosRouter } from './modules/usuarios';
 
 /**
  * PUNTO ÚNICO DE REGISTRO DE MÓDULOS.
@@ -11,6 +12,7 @@ import { authRouter } from './modules/auth';
  */
 const modulos: Array<{ ruta: string; router: Router }> = [
   { ruta: '/api/auth', router: authRouter }, // HU-01 / HU-02
+  { ruta: '/api/usuarios', router: usuariosRouter }, // HU-02
 ];
 
 export function crearApp() {
