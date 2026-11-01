@@ -6,7 +6,7 @@ import { authRouter } from './modules/auth';
 import { categoriasRouter } from './modules/categorias';
 import { comentariosRouter } from './modules/comentarios';
 import { publicacionesRouter } from './modules/publicaciones';
-import { denunciasRouter } from './modules/reportes';
+import { denunciasRouter, moderacionRouter } from './modules/reportes';
 import { usuariosRouter } from './modules/usuarios';
 
 /**
@@ -21,6 +21,7 @@ const modulos: Array<{ ruta: string; router: Router }> = [
   { ruta: '/api/publicaciones', router: publicacionesRouter }, // HU-03
   { ruta: '/api/publicaciones/:publicacionId/comentarios', router: comentariosRouter }, // HU-04
   { ruta: '/api/publicaciones/:publicacionId/reportes', router: denunciasRouter }, // HU-05
+  { ruta: '/api/reportes', router: moderacionRouter }, // HU-06b
 ];
 
 export function crearApp() {
