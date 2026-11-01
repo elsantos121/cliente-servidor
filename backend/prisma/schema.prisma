@@ -27,6 +27,7 @@ model Usuario {
   creadoEn     DateTime @default(now()) @map("creado_en")
 
   publicaciones Publicacion[]
+  comentarios   Comentario[]
 
   @@map("usuarios")
 }
@@ -57,7 +58,24 @@ model Publicacion {
   creadoEn      DateTime  @default(now()) @map("creado_en")
   actualizadoEn DateTime  @updatedAt @map("actualizado_en")
 
+  comentarios Comentario[]
+
   @@index([categoriaId])
   @@index([creadoEn])
   @@map("publicaciones")
+}
+
+// HU-04 · Comentarios
+model Comentario {
+  id            Int         @id @default(autoincrement())
+  contenido     String      @db.VarChar(2000)
+  autorId       Int         @map("autor_id")
+  autor         Usuario     @relation(fields: [autorId], references: [id], onDelete: Restrict)
+  /// CASCADE: al borrar la publicación se borran sus comentarios (decisión de la v1).
+  publicacionId Int         @map("publicacion_id")
+  publicacion   Publicacion @relation(fields: [publicacionId], references: [id], onDelete: Cascade)
+  creadoEn      DateTime    @default(now()) @map("creado_en")
+
+  @@index([publicacionId])
+  @@map("comentarios")
 }
