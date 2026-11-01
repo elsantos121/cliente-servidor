@@ -54,3 +54,9 @@ export interface Reporte {
   creadoEn: string;
   publicacion: { id: number; titulo: string };
 }
+
+/** Reporte tal como lo ve un administrador al moderar (HU-06b). */
+export interface ReporteModeracion extends Reporte {
+  actualizadoEn: string;
+  autor: { id: number; nombre: string };
+}
