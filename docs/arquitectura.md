@@ -190,6 +190,37 @@ Cuerpo: `{ "nombre": "Matemática" }` (se recortan espacios; 2–50 caracteres).
 
 La tabla `categorias` guarda `nombre` (como se escribió) y `nombre_normalizado` (recortado y en minúsculas) con `UNIQUE`: así la unicidad no distingue mayúsculas sin depender de índices funcionales que Prisma no modela.
 
+#### Publicaciones (HU-03)
+
+Una publicación se devuelve siempre con esta forma:
+
+```json
+{ "id": 5, "titulo": "…", "contenido": "…", "creadoEn": "…", "actualizadoEn": "…",
+  "autor": { "id": 1, "nombre": "Ana" }, "categoria": { "id": 2, "nombre": "Programación" } }
+```
+
+Cuerpo de `POST` y `PUT` (el `PUT` reemplaza los tres campos; un `autorId` enviado se ignora):
+
+| Campo | Regla |
+|---|---|
+| `titulo` | 3–150 caracteres (se recortan espacios) |
+| `contenido` | 10–5000 caracteres (se recortan espacios) |
+| `categoriaId` | entero positivo de una categoría existente |
+
+| Método y ruta | Acceso | Éxito | Errores |
+|---|---|---|---|
+| `GET /api/publicaciones?categoriaId=` | público | `200` `{ "publicaciones": [...] }`, más recientes primero | `400` si `categoriaId` no es un entero positivo |
+| `GET /api/publicaciones/:id` | público | `200` `{ "publicacion": {...} }` | `404` si no existe o el id no es un entero positivo |
+| `POST /api/publicaciones` | autenticado | `201` `{ "publicacion": {...} }` | `400` datos inválidos o `categoriaId` inexistente (`detalles.categoriaId: "La categoría no existe"`) · `401` |
+| `PUT /api/publicaciones/:id` | solo el autor | `200` `{ "publicacion": {...} }` | `400` · `401` · `403` (incluso para un ADMIN) · `404` |
+| `DELETE /api/publicaciones/:id` | autor o ADMIN | `204` sin cuerpo | `401` · `403` · `404` |
+
+La categoría inexistente se detecta por la clave foránea (`P2003` → `400`), igual que los duplicados por `UNIQUE` (`P2002` → `409`). La FK a categorías es `RESTRICT`: una categoría con publicaciones no se puede borrar.
+
+#### Costo de bcrypt
+
+`BCRYPT_COSTO` (por defecto `10`, rango 4–14) fija las rondas de bcrypt. `.env.test` usa `4` para que la suite sea rápida; el hash de relleno del login usa el mismo costo que los reales para no alterar los tiempos de respuesta.
+
 #### Duplicados y concurrencia
 
 Registro (HU-01) y categorías (HU-06a) no consultan antes de crear: intentan el `INSERT` y traducen la violación de `UNIQUE` (código Prisma `P2002`) a `409` con `esViolacionUnica()` de `src/db/errores.ts`. Así dos solicitudes iguales simultáneas dan un `201` y un `409`, nunca un `500`.

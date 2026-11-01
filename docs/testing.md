@@ -187,3 +187,41 @@ Prueba manual en el navegador (`npm run dev` + `ng serve`, base `foro_dev`, anch
 - Como estudiante: la cabecera no muestra "Categorías", `/admin/categorias` redirige fuera del panel y `POST /api/categorias` responde `403 PROHIBIDO`.
 
 **Nota de proceso:** la ejecución de Vitest del frontend falló una vez con `Timeout waiting for worker to respond` por falta de memoria en la máquina; al reintentar corrió normalmente.
+
+### Fase 3 · Iteración 4 — HU-03 Publicaciones (2026-11-01)
+
+Rama `feature/HU-03-publicaciones` (creada desde `feature/HU-06a-categorias`). Mismo entorno.
+
+| Paso | Comando | Resultado real |
+|---|---|---|
+| Gherkin | `npm run test:bdd` | **falla:** 34 escenarios (13 *undefined*), 29 pasos sin definir |
+| RED servicio | `npx vitest run tests/integration/publicaciones.service.test.ts` | **falla:** `Cannot find module '../../src/modules/publicaciones/publicaciones.service'` |
+| GREEN servicio | ídem | **14 pruebas pasadas**; migración `20261101185103_crear_publicaciones` aplicada |
+| RED endpoints | `npx vitest run tests/integration/publicaciones.routes.test.ts` | **22 de 25 fallan** (`expected 404 to be 201/400/401`). Las 3 que pasan son las de "id inexistente → 404": coinciden por casualidad con el 404 genérico de ruta inexistente |
+| GREEN endpoints | ídem | **25 pruebas pasadas** |
+| Pasos BDD | `npm run test:bdd` | **34 escenarios / 224 pasos pasados** |
+| REFACTOR | suite completa antes del cambio | 12 archivos, 97 pruebas · 128 s en total, **64 s de pruebas** · Cucumber **29 s** |
+| REFACTOR | suite completa con `BCRYPT_COSTO=4` | 12 archivos, 97 pruebas · 141 s en total, **27 s de pruebas** · Cucumber **10 s** |
+| Pantallas | `npx ng test --watch=false` | **8 archivos, 48 pruebas pasadas** (inicio 5, detalle 7, formulario 5) |
+
+El tiempo total de `npm test` no bajó porque está dominado por la carga de módulos en esta máquina (37 s de `import`), que bcrypt no afecta; sí bajó el tiempo de ejecución de las pruebas y de Cucumber.
+
+Verificación completa al cierre de la iteración:
+
+| Comando | Resultado |
+|---|---|
+| backend `npm run typecheck` / `lint` / `build` | sin errores |
+| backend `npm test` | 12 archivos, **97 pruebas pasadas** |
+| backend `npm run test:bdd` | **34 escenarios / 224 pasos pasados** |
+| frontend `npx ng test --watch=false` | 8 archivos, **48 pruebas pasadas** |
+| frontend `npx ng build` | sin errores (chunks diferidos: inicio 4,2 kB, detalle 4,8 kB, formulario 6,8 kB) |
+
+Prueba manual en el navegador (`npm run dev` + `ng serve`, base `foro_dev`, ancho 360 px), con la cuenta de prueba de HU-02:
+- El inicio muestra "Todavía no hay publicaciones" y el filtro con las categorías.
+- "Nueva publicación" → crear "Ayuda con límites" en Matemática → lleva al detalle, con "Editar" y "Eliminar".
+- Editar el título → el detalle muestra el título nuevo y la marca "editada".
+- Con otra cuenta de estudiante: el detalle no muestra acciones, `/publicaciones/1/editar` muestra "Solo el autor puede editar esta publicación." y la API responde `403` a `PUT` y `DELETE`.
+- De vuelta con el autor: el inicio lista la publicación; "Eliminar" pide confirmación y, al confirmar, vuelve al inicio vacío.
+- Sin sesión, `/publicaciones/1` muestra "La publicación no existe o fue eliminada.".
+
+**Configuración:** `.env.test` necesita `BCRYPT_COSTO=4` para la mejora de tiempo (opcional; sin la variable se usa 10).

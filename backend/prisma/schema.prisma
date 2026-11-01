@@ -26,6 +26,8 @@ model Usuario {
   rol          Rol      @default(ESTUDIANTE)
   creadoEn     DateTime @default(now()) @map("creado_en")
 
+  publicaciones Publicacion[]
+
   @@map("usuarios")
 }
 
@@ -37,5 +39,25 @@ model Categoria {
   nombreNormalizado String   @unique @map("nombre_normalizado") @db.VarChar(50)
   creadoEn          DateTime @default(now()) @map("creado_en")
 
+  publicaciones Publicacion[]
+
   @@map("categorias")
+}
+
+// HU-03 · Publicaciones
+model Publicacion {
+  id            Int       @id @default(autoincrement())
+  titulo        String    @db.VarChar(150)
+  contenido     String    @db.Text
+  autorId       Int       @map("autor_id")
+  autor         Usuario   @relation(fields: [autorId], references: [id], onDelete: Restrict)
+  /// RESTRICT: no se puede borrar una categoría que tiene publicaciones.
+  categoriaId   Int       @map("categoria_id")
+  categoria     Categoria @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
+  creadoEn      DateTime  @default(now()) @map("creado_en")
+  actualizadoEn DateTime  @updatedAt @map("actualizado_en")
+
+  @@index([categoriaId])
+  @@index([creadoEn])
+  @@map("publicaciones")
 }

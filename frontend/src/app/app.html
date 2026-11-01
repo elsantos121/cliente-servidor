@@ -2,6 +2,7 @@
   <a routerLink="/" class="marca">Foro universitario</a>
   <nav aria-label="Principal">
     @if (sesion.usuario(); as usuario) {
+      <a routerLink="/publicaciones/nueva">Nueva publicación</a>
       @if (sesion.esAdmin()) {
         <a routerLink="/admin/categorias">Categorías</a>
       }

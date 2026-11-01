@@ -150,3 +150,11 @@ input[aria-invalid="true"] {
 a {
   color: var(--color-primario);
 }
+
+.boton--peligro {
+  background: var(--color-error);
+}
+
+.boton--peligro:hover:not(:disabled) {
+  background: #8f1c13;
+}
