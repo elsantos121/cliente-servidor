@@ -31,6 +31,8 @@ export class Login {
     password: ['', Validators.required],
   });
 
+  /** Fase 4: si el interceptor trajo al usuario porque su sesión dejó de valer, se lo explica. */
+  protected readonly sesionExpirada = this.ruta.snapshot.queryParamMap.get('motivo') === 'sesion-expirada';
   protected readonly enviando = signal(false);
   protected readonly errorGeneral = signal<string | null>(null);
 

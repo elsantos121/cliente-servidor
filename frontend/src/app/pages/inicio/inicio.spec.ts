@@ -95,6 +95,23 @@ describe('Inicio (HU-03)', () => {
     http.expectOne(`${api}/publicaciones`).flush({ publicaciones: [] });
   });
 
+  it('si también fallaron las categorías, "Reintentar" las vuelve a pedir para el filtro (fase 4)', async () => {
+    fixture = TestBed.createComponent(Inicio);
+    http = TestBed.inject(HttpTestingController);
+    await fixture.whenStable();
+    http.expectOne(`${api}/categorias`).error(new ProgressEvent('error'), { status: 0 });
+    http.expectOne(`${api}/publicaciones`).error(new ProgressEvent('error'), { status: 0 });
+    await fixture.whenStable();
+
+    pantalla().querySelector<HTMLButtonElement>('[role="alert"] button')!.click();
+    http.expectOne(`${api}/categorias`).flush({ categorias: [{ id: 1, nombre: 'Matemática', creadoEn: '' }] });
+    http.expectOne(`${api}/publicaciones`).flush({ publicaciones: [] });
+    await fixture.whenStable();
+
+    const opciones = [...pantalla().querySelectorAll('#filtro-categoria option')].map((o) => o.textContent?.trim());
+    expect(opciones).toEqual(['Todas', 'Matemática']);
+  });
+
   it('el botón "Nueva publicación" aparece solo con sesión iniciada', async () => {
     await crear();
     http.expectOne(`${api}/publicaciones`).flush({ publicaciones: [] });

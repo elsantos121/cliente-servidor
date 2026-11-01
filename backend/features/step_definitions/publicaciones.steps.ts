@@ -95,3 +95,7 @@ Then(/^las publicaciones listadas son (.+)$/, function (this: ForoWorld, texto: 
 Then('la publicación {string} ya no existe', async function (titulo: string) {
   assert.equal(await prisma.publicacion.count({ where: { titulo } }), 0);
 });
+
+Then('no se lista ninguna publicación', function (this: ForoWorld) {
+  assert.deepEqual(this.respuesta?.body.publicaciones, []);
+});

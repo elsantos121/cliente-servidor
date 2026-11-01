@@ -101,6 +101,8 @@ describe('authInterceptor (HU-02)', () => {
 
     expect(sesion.autenticado()).toBe(false);
     expect(router.url.startsWith('/login')).toBe(true);
+    // Fase 4: el login necesita saber por qué llegó el usuario para explicárselo.
+    expect(router.parseUrl(router.url).queryParamMap.get('motivo')).toBe('sesion-expirada');
   });
 });
 

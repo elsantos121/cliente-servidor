@@ -21,7 +21,7 @@
   } @else if (error(); as mensaje) {
     <div class="aviso aviso--error" role="alert">
       <p>{{ mensaje }}</p>
-      <button type="button" class="boton boton--secundario" (click)="cargar()">Reintentar</button>
+      <button type="button" class="boton boton--secundario" (click)="reintentar()">Reintentar</button>
     </div>
   } @else if (publicaciones().length === 0) {
     <p class="ayuda">
