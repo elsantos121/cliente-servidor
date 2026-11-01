@@ -4,15 +4,12 @@ import request from 'supertest';
 import { crearApp } from '../../src/app';
 import { crearPublicacion } from '../../src/modules/publicaciones/publicaciones.service';
 import { prisma } from '../../tests/helpers/db';
+import { listaEntreComillas } from '../support/texto';
 import type { ForoWorld } from '../support/world';
 
 const app = crearApp();
 
 const CONTENIDO = 'Contenido de prueba con más de diez caracteres.';
-
-function lista(texto: string): string[] {
-  return [...texto.matchAll(/"([^"]*)"/g)].map((m) => m[1]);
-}
 
 async function idCategoria(nombre: string): Promise<number> {
   return (await prisma.categoria.findFirstOrThrow({ where: { nombre } })).id;
@@ -92,7 +89,7 @@ Then(
 
 Then(/^las publicaciones listadas son (.+)$/, function (this: ForoWorld, texto: string) {
   const titulos = this.respuesta?.body.publicaciones.map((p: { titulo: string }) => p.titulo);
-  assert.deepEqual(titulos, lista(texto));
+  assert.deepEqual(titulos, listaEntreComillas(texto));
 });
 
 Then('la publicación {string} ya no existe', async function (titulo: string) {
