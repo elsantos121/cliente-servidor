@@ -15,3 +15,25 @@ export interface ErrorApi {
   mensaje: string;
   detalles?: Record<string, string>;
 }
+
+export interface Categoria {
+  id: number;
+  nombre: string;
+  creadoEn: string;
+}
+
+export interface Publicacion {
+  id: number;
+  titulo: string;
+  contenido: string;
+  creadoEn: string;
+  actualizadoEn: string;
+  autor: { id: number; nombre: string };
+  categoria: { id: number; nombre: string };
+}
+
+export interface DatosPublicacion {
+  titulo: string;
+  contenido: string;
+  categoriaId: number;
+}
