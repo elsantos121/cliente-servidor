@@ -24,7 +24,7 @@ afterAll(() => prisma.$disconnect());
 
 const ruta = (id: number | string = publicacionId) => `/api/publicaciones/${id}/comentarios`;
 
-function comentar(contenido: unknown, token: string | undefined = tokenBeto, id: number | string = publicacionId) {
+function comentar(contenido: unknown, token: string | null = tokenBeto, id: number | string = publicacionId) {
   const solicitud = request(app).post(ruta(id));
   if (token) solicitud.set('Authorization', `Bearer ${token}`);
   return solicitud.send({ contenido });
@@ -61,7 +61,7 @@ describe('POST /api/publicaciones/:id/comentarios (HU-04)', () => {
   });
 
   it('sin token → 401', async () => {
-    expect((await comentar('Hola', undefined)).status).toBe(401);
+    expect((await comentar('Hola', null)).status).toBe(401);
   });
 
   it.each(['9999', 'abc'])('publicación inexistente o inválida (%s) → 404', async (id) => {
