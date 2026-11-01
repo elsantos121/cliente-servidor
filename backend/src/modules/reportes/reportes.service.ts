@@ -44,9 +44,9 @@ export function listarReportes(filtro: { estado?: EstadoReporte }) {
 
 /** HU-06b: un administrador marca un reporte como RESUELTO o DESCARTADO. */
 export async function cambiarEstado(id: number, datos: { estado: Exclude<EstadoReporte, 'PENDIENTE'> }) {
-  const existe = await prisma.reporte.count({ where: { id } });
-  if (!existe) {
-    throw AppError.noEncontrado('Reporte');
+  try {
+    return await prisma.reporte.update({ where: { id }, data: { estado: datos.estado }, select: camposModeracion });
+  } catch (error) {
+    throw traducirErrorPrisma(error, { inexistente: AppError.noEncontrado('Reporte') });
   }
-  return prisma.reporte.update({ where: { id }, data: { estado: datos.estado }, select: camposModeracion });
 }
