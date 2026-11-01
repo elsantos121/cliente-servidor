@@ -51,6 +51,9 @@ describe('PublicacionDetalle (HU-03)', () => {
       solicitud.flush({ error: { codigo: 'NO_ENCONTRADO', mensaje: 'Publicación no encontrado' } }, { status: 404, statusText: 'Not Found' });
     } else {
       solicitud.flush({ publicacion: respuesta });
+      await fixture.whenStable();
+      // La sección de comentarios (HU-04) carga los suyos al aparecer.
+      http.expectOne(`${url}/comentarios`).flush({ comentarios: [] });
     }
     await fixture.whenStable();
   }
@@ -58,8 +61,10 @@ describe('PublicacionDetalle (HU-03)', () => {
   const pantalla = () => fixture.nativeElement as HTMLElement;
   const botones = () => [...pantalla().querySelectorAll('.acciones .boton')].map((b) => b.textContent?.trim());
 
-  it('muestra título, categoría, autor y contenido', async () => {
+  it('muestra título, categoría, autor, contenido y la sección de comentarios', async () => {
     await abrir(null);
+
+    expect(pantalla().querySelector('app-comentarios')).toBeTruthy();
 
     expect(pantalla().querySelector('h1')?.textContent).toBe('Ayuda con límites');
     expect(pantalla().querySelector('.meta')?.textContent).toContain('Matemática');

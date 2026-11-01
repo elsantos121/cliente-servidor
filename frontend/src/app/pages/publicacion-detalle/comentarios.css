@@ -1,0 +1,57 @@
+.comentarios {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.cantidad {
+  color: var(--color-texto-suave);
+  font-weight: normal;
+}
+
+.lista {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.comentario {
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.meta {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: 0.9rem;
+}
+
+.texto {
+  margin: 0.25rem 0 0;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+form {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+}
+
+form .campo {
+  width: 100%;
+}
+
+textarea {
+  resize: vertical;
+}
