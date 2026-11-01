@@ -1,0 +1,44 @@
+<section class="inicio" aria-labelledby="titulo-inicio">
+  <div class="encabezado">
+    <h1 id="titulo-inicio">Publicaciones</h1>
+    @if (sesion.autenticado()) {
+      <a class="boton" routerLink="/publicaciones/nueva">Nueva publicación</a>
+    }
+  </div>
+
+  <div class="campo filtro">
+    <label for="filtro-categoria">Categoría</label>
+    <select id="filtro-categoria" (change)="filtrar($any($event.target).value)">
+      <option value="">Todas</option>
+      @for (categoria of categorias(); track categoria.id) {
+        <option [value]="categoria.id">{{ categoria.nombre }}</option>
+      }
+    </select>
+  </div>
+
+  @if (cargando()) {
+    <p class="ayuda" role="status">Cargando publicaciones…</p>
+  } @else if (error(); as mensaje) {
+    <div class="aviso aviso--error" role="alert">
+      <p>{{ mensaje }}</p>
+      <button type="button" class="boton boton--secundario" (click)="cargar()">Reintentar</button>
+    </div>
+  } @else if (publicaciones().length === 0) {
+    <p class="ayuda">
+      {{ categoriaId() ? 'No hay publicaciones en esta categoría.' : 'Todavía no hay publicaciones.' }}
+    </p>
+  } @else {
+    <ul class="lista">
+      @for (publicacion of publicaciones(); track publicacion.id) {
+        <li class="item">
+          <a class="titulo" [routerLink]="['/publicaciones', publicacion.id]">{{ publicacion.titulo }}</a>
+          <p class="meta">
+            <span class="etiqueta-categoria">{{ publicacion.categoria.nombre }}</span>
+            {{ publicacion.autor.nombre }} ·
+            <time [attr.datetime]="publicacion.creadoEn">{{ publicacion.creadoEn | date: 'd/M/yyyy HH:mm' }}</time>
+          </p>
+        </li>
+      }
+    </ul>
+  }
+</section>
