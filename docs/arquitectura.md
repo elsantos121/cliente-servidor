@@ -217,6 +217,17 @@ Cuerpo de `POST` y `PUT` (el `PUT` reemplaza los tres campos; un `autorId` envia
 
 La categoría inexistente se detecta por la clave foránea (`P2003` → `400`), igual que los duplicados por `UNIQUE` (`P2002` → `409`). La FK a categorías es `RESTRICT`: una categoría con publicaciones no se puede borrar.
 
+#### Comentarios (HU-04)
+
+Se montan como sub-recurso: `/api/publicaciones/:publicacionId/comentarios` (router con `mergeParams`). Un comentario se devuelve como `{ "id", "contenido", "creadoEn", "autor": { "id", "nombre" } }`.
+
+| Método y ruta | Acceso | Éxito | Errores |
+|---|---|---|---|
+| `GET /api/publicaciones/:id/comentarios` | público | `200` `{ "comentarios": [...] }`, más antiguos primero | `404` si la publicación no existe o el id no es un entero positivo |
+| `POST /api/publicaciones/:id/comentarios` | autenticado | `201` `{ "comentario": {...} }` | `400` contenido vacío (también solo espacios) o de más de 2000 caracteres · `401` · `404` publicación inexistente |
+
+Cuerpo del `POST`: `{ "contenido": "…" }` (se recortan espacios). La FK a la publicación es `CASCADE`: al eliminar una publicación se eliminan sus comentarios. Comentar una publicación inexistente se detecta por la clave foránea (`P2003` → `404`).
+
 #### Costo de bcrypt
 
 `BCRYPT_COSTO` (por defecto `10`, rango 4–14) fija las rondas de bcrypt. `.env.test` usa `4` para que la suite sea rápida; el hash de relleno del login usa el mismo costo que los reales para no alterar los tiempos de respuesta.
