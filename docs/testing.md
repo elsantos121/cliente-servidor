@@ -225,3 +225,35 @@ Prueba manual en el navegador (`npm run dev` + `ng serve`, base `foro_dev`, anch
 - Sin sesión, `/publicaciones/1` muestra "La publicación no existe o fue eliminada.".
 
 **Configuración:** `.env.test` necesita `BCRYPT_COSTO=4` para la mejora de tiempo (opcional; sin la variable se usa 10).
+
+### Fase 3 · Iteración 5 — HU-04 Comentarios (2026-11-01)
+
+Rama `feature/HU-04-comentarios` (creada desde `feature/HU-03-publicaciones`). Mismo entorno.
+
+| Paso | Comando | Resultado real |
+|---|---|---|
+| Gherkin | `npm run test:bdd` | **falla:** 40 escenarios (6 *undefined*), 10 pasos sin definir |
+| RED servicio | `npx vitest run tests/integration/comentarios.service.test.ts` | **falla:** `Cannot find module '../../src/modules/comentarios/comentarios.service'` |
+| GREEN servicio | ídem | **6 pruebas pasadas** (incluye la cascada al borrar la publicación); migración `20261101193456_crear_comentarios` aplicada |
+| RED endpoints | `npx vitest run tests/integration/comentarios.routes.test.ts` | **9 de 14 fallan** (`expected 404 to be 201/400/401/200`). Pasan los 4 casos de "404" (coinciden con el 404 genérico de ruta inexistente) y el que comprueba que el detalle de la publicación sigue respondiendo |
+| GREEN endpoints | ídem | primera ejecución: **13 de 14**; falló "sin token → 401" por un error de la prueba (pasar `undefined` activaba el token por defecto). Corregida la prueba → **14 pasadas** |
+| Pasos BDD | `npm run test:bdd` | **40 escenarios / 274 pasos pasados** |
+| REFACTOR | suite completa | ver tabla siguiente |
+| Pantalla | `npx ng test --watch=false` | **9 archivos, 54 pruebas pasadas** (comentarios 6; el detalle ahora también atiende el pedido de comentarios) |
+
+Verificación completa al cierre de la iteración:
+
+| Comando | Resultado |
+|---|---|
+| backend `npm run typecheck` / `lint` / `build` | sin errores |
+| backend `npm test` | 14 archivos, **117 pruebas pasadas** |
+| backend `npm run test:bdd` | **40 escenarios / 274 pasos pasados** |
+| frontend `npx ng test --watch=false` | 9 archivos, **54 pruebas pasadas** |
+| frontend `npx ng build` | sin errores (chunk diferido `publicacion-detalle` 10,6 kB con comentarios) |
+
+Prueba manual en el navegador (`npm run dev` + `ng serve`, base `foro_dev`), sobre una publicación de prueba creada por API:
+- Sin sesión, el detalle muestra "Comentarios (0)", "Todavía no hay comentarios." y "Iniciá sesión para comentar." (enlace a `/login?volver=%2Fpublicaciones%2F2`).
+- Al iniciar sesión desde ese enlace vuelve al detalle y aparece el formulario.
+- "Comentar" con el campo vacío muestra "El comentario no puede estar vacío" sin llamar a la API.
+- Un comentario válido aparece al final con el nombre del autor ("Comentarios (1)") y sigue ahí al recargar.
+- Al eliminar la publicación por API (`204`), `GET .../comentarios` responde `404` y en `foro_dev` quedan **0** comentarios de esa publicación (cascada).
