@@ -1,20 +1,22 @@
 # Historias de usuario — Foro universitario
 
-> Fase 1 (Análisis). Formato: *Como [rol], quiero [acción], para [beneficio].*
+> Escritas en la fase 1 (análisis); las siete quedaron terminadas en la fase 3. Formato: *Como [rol], quiero [acción], para [beneficio].*
 > Prioridad: **Alta** = necesaria para que el foro funcione · **Media** = completa la v1.
-> Las pruebas listadas se crearán siguiendo TDD/BDD en la Fase 3; los nombres de archivo son los previstos.
+> Las pruebas de cada historia se escribieron con TDD/BDD; la evidencia de cada ciclo está en [testing.md](testing.md).
 
 ## Resumen y orden de implementación
 
-| Orden | ID | Historia | Prioridad | Depende de | Estado |
-|---|---|---|---|---|---|
-| 1 | HU-01 | Registro de estudiantes | Alta | — | Implementada (pendiente PR a develop) |
-| 2 | HU-02 | Inicio de sesión | Alta | HU-01 | Implementada (pendiente PR a develop) |
-| 3 | HU-06a | Gestión de categorías (admin) | Alta | HU-02 | Implementada (pendiente PR a develop) |
-| 4 | HU-03 | Publicaciones (crear, consultar, editar, eliminar) | Alta | HU-02, HU-06a | Implementada (pendiente PR a develop) |
-| 5 | HU-04 | Comentarios | Media | HU-03 | Implementada (pendiente PR a develop) |
-| 6 | HU-05 | Denuncia de publicaciones | Media | HU-03 | Implementada (pendiente PR a develop) |
-| 7 | HU-06b | Moderación de reportes (admin) | Media | HU-05 | Implementada (pendiente PR a develop) |
+| Orden | ID | Historia | Prioridad | Depende de | Estado | Pull request |
+|---|---|---|---|---|---|---|
+| 1 | HU-01 | Registro de estudiantes | Alta | — | Terminada | #1 |
+| 2 | HU-02 | Inicio de sesión | Alta | HU-01 | Terminada | #2 → #7 |
+| 3 | HU-06a | Gestión de categorías (admin) | Alta | HU-02 | Terminada | #3 → #7 |
+| 4 | HU-03 | Publicaciones (crear, consultar, editar, eliminar) | Alta | HU-02, HU-06a | Terminada | #4 → #7 |
+| 5 | HU-04 | Comentarios | Media | HU-03 | Terminada | #5 → #7 |
+| 6 | HU-05 | Denuncia de publicaciones | Media | HU-03 | Terminada | #8 |
+| 7 | HU-06b | Moderación de reportes (admin) | Media | HU-05 | Terminada | #9 |
+
+HU-02 a HU-04 se mergearon primero en ramas apiladas (#2 a #5) y llegaron juntas a `develop` en #7. Además, `features/integracion.feature` recorre las siete historias de punta a punta (fase 4).
 
 HU-06 original ("gestionar categorías y revisar reportes") se dividió en HU-06a y HU-06b por ser demasiado grande: son dos módulos independientes y la segunda depende de HU-05.
 
@@ -35,7 +37,7 @@ Una historia está terminada cuando:
 ## HU-01 — Registro de estudiantes
 
 - **Prioridad:** Alta
-- **Estado:** implementada en `feature/HU-01-registro` (API + pantalla `/registro`); falta integrarla a `develop`.
+- **Estado:** terminada e integrada a `develop` (API + pantalla `/registro`; rama `feature/HU-01-registro`).
 - **Descripción:** Como estudiante, quiero registrarme con mi nombre, correo y contraseña para participar en el foro.
 
 **Criterios de aceptación**
@@ -58,7 +60,7 @@ Una historia está terminada cuando:
 ## HU-02 — Inicio de sesión
 
 - **Prioridad:** Alta
-- **Estado:** implementada en `feature/HU-02-login` (API, seed del admin, pantalla `/login`, interceptor y guard); falta integrarla a `develop`.
+- **Estado:** terminada e integrada a `develop` (API, seed del admin, pantalla `/login`, interceptor y guard; rama `feature/HU-02-login`).
 - **Descripción:** Como usuario registrado, quiero iniciar sesión para acceder a las funciones autorizadas según mi rol.
 
 **Criterios de aceptación**
@@ -79,7 +81,7 @@ Una historia está terminada cuando:
 ## HU-06a — Gestión de categorías
 
 - **Prioridad:** Alta (las publicaciones requieren categoría)
-- **Estado:** implementada en `feature/HU-06a-categorias` (API + panel `/admin/categorias`); falta integrarla a `develop`.
+- **Estado:** terminada e integrada a `develop` (API + panel `/admin/categorias`; rama `feature/HU-06a-categorias`).
 - **Descripción:** Como administrador, quiero crear categorías para mantener organizado el foro.
 
 **Criterios de aceptación**
@@ -98,7 +100,7 @@ Una historia está terminada cuando:
 ## HU-03 — Publicaciones
 
 - **Prioridad:** Alta
-- **Estado:** implementada en `feature/HU-03-publicaciones` (API + pantallas `/`, `/publicaciones/:id`, `/publicaciones/nueva`, `/publicaciones/:id/editar`); falta integrarla a `develop`.
+- **Estado:** terminada e integrada a `develop` (API + pantallas `/`, `/publicaciones/:id`, `/publicaciones/nueva`, `/publicaciones/:id/editar`; rama `feature/HU-03-publicaciones`).
 - **Descripción:** Como estudiante, quiero crear, consultar, editar y eliminar mis publicaciones para compartir información con la comunidad.
 
 Se divide en tareas: **(a)** listar y ver detalle · **(b)** crear · **(c)** editar/eliminar propias.
@@ -119,7 +121,7 @@ Se divide en tareas: **(a)** listar y ver detalle · **(b)** crear · **(c)** ed
 ## HU-04 — Comentarios
 
 - **Prioridad:** Media
-- **Estado:** implementada en `feature/HU-04-comentarios` (API + sección de comentarios en el detalle); falta integrarla a `develop`.
+- **Estado:** terminada e integrada a `develop` (API + sección de comentarios en el detalle; rama `feature/HU-04-comentarios`).
 - **Descripción:** Como estudiante, quiero comentar publicaciones para participar en las conversaciones.
 
 **Criterios de aceptación**
@@ -138,7 +140,7 @@ Se divide en tareas: **(a)** listar y ver detalle · **(b)** crear · **(c)** ed
 ## HU-05 — Denuncia de publicaciones
 
 - **Prioridad:** Media
-- **Estado:** implementada en `feature/HU-05-denuncias` (API + botón y formulario en el detalle); falta integrarla a `develop`.
+- **Estado:** terminada e integrada a `develop` (API + botón y formulario en el detalle; rama `feature/HU-05-denuncias`).
 - **Descripción:** Como estudiante, quiero denunciar una publicación para informar contenido inapropiado.
 
 **Criterios de aceptación**
@@ -157,7 +159,7 @@ Se divide en tareas: **(a)** listar y ver detalle · **(b)** crear · **(c)** ed
 ## HU-06b — Moderación de reportes
 
 - **Prioridad:** Media
-- **Estado:** implementada en `feature/HU-06b-moderacion` (API + panel `/admin/reportes`); falta integrarla a `develop`.
+- **Estado:** terminada e integrada a `develop` (API + panel `/admin/reportes`; rama `feature/HU-06b-moderacion`).
 - **Descripción:** Como administrador, quiero revisar los reportes pendientes y eliminar publicaciones denunciadas para mantener el foro en orden.
 
 **Criterios de aceptación**

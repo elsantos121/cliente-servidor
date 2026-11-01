@@ -1,6 +1,6 @@
 # Arquitectura — Foro universitario
 
-> Fase 1 (Análisis). Las versiones exactas de las dependencias se fijan y verifican en la Fase 2.
+> Escrita en la fase 1 (análisis) y completada en la fase 3 con cada endpoint implementado. Las versiones exactas están en los `package.json` y en el [README](../README.md#tecnologías).
 
 ## 1. Visión general
 
@@ -32,12 +32,18 @@ cliente-servidor/
 │   │   │   ├── comentarios/
 │   │   │   └── reportes/
 │   │   ├── app.ts         crea la app y registra los módulos (único punto de registro)
-│   │   └── server.ts      arranca el servidor HTTP
-│   ├── tests/             unit/ · integration/ · helpers/
-│   └── features/          *.feature (Gherkin) · step_definitions/
-├── frontend/              Angular (componentes standalone, sin librería de UI)
+│   │   ├── server.ts      arranca el servidor HTTP
+│   │   └── db/            cliente de Prisma + traducción de errores (errores.ts)
+│   ├── tests/             unit/ · integration/ · helpers/ · setup/
+│   └── features/          *.feature (Gherkin) · step_definitions/ · support/
+├── frontend/src/app/
+│   ├── core/              servicios por recurso, sesión, interceptor, guard, modelos
+│   ├── pages/             una carpeta por pantalla (inicio, registro, login, detalle,
+│   │                      formulario, admin-categorias, admin-reportes)
+│   ├── app.routes.ts      rutas con carga diferida y guards por rol
+│   └── app.config.ts      HttpClient con el interceptor, router con input binding
 ├── docs/
-└── .github/workflows/ci.yml
+└── .github/workflows/ci.yml   integración continua (fase 5)
 ```
 
 ### Estructura interna de un módulo
@@ -91,7 +97,7 @@ Usuario 1──* Reporte *──1 Publicacion
 
 **Decisión a revisar:** al eliminar una publicación se eliminan en cascada sus comentarios y reportes. Es lo más simple para la v1; conservar el historial de moderación (borrado lógico) queda como posible feature futura.
 
-## 5. API REST (prevista)
+## 5. API REST
 
 Prefijo `/api`. Formato de error uniforme:
 
@@ -281,5 +287,6 @@ Registro (HU-01) y categorías (HU-06a) no consultan antes de crear: intentan el
 - Nuevo módulo → carpeta en `src/modules/<nombre>/` + una línea en `app.ts`.
 - Nuevo modelo → `schema.prisma` + `npx prisma migrate dev --name <descripcion>` (migraciones aditivas).
 - Nuevas reglas de permisos → reutilizar `autenticar` y `autorizar(rol)`.
+- Errores de la base por datos inválidos → `traducirErrorPrisma(error, { unico, claveForanea, inexistente })`.
 
-El procedimiento completo para integrar features de la otra parte del equipo estará en `docs/contribucion.md`.
+El procedimiento completo para integrar features de la otra parte del equipo está en [contribucion.md](contribucion.md).
