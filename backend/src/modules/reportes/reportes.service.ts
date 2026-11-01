@@ -1,4 +1,4 @@
-import { esClaveForaneaInexistente, esViolacionUnica } from '../../db/errores';
+import { traducirErrorPrisma } from '../../db/errores';
 import { prisma } from '../../db/prisma';
 import { AppError } from '../../errors/AppError';
 
@@ -18,12 +18,9 @@ export async function denunciar(publicacionId: number, autorId: number, datos: {
       select: camposPublicos,
     });
   } catch (error) {
-    if (esViolacionUnica(error)) {
-      throw AppError.conflicto('Ya denunciaste esta publicación');
-    }
-    if (esClaveForaneaInexistente(error)) {
-      throw AppError.noEncontrado('Publicación');
-    }
-    throw error;
+    throw traducirErrorPrisma(error, {
+      unico: AppError.conflicto('Ya denunciaste esta publicación'),
+      claveForanea: AppError.noEncontrado('Publicación'),
+    });
   }
 }

@@ -1,4 +1,4 @@
-import { esClaveForaneaInexistente } from '../../db/errores';
+import { traducirErrorPrisma } from '../../db/errores';
 import { prisma } from '../../db/prisma';
 import { AppError } from '../../errors/AppError';
 
@@ -30,9 +30,6 @@ export async function comentar(publicacionId: number, autorId: number, datos: { 
       select: camposPublicos,
     });
   } catch (error) {
-    if (esClaveForaneaInexistente(error)) {
-      throw AppError.noEncontrado('Publicación');
-    }
-    throw error;
+    throw traducirErrorPrisma(error, { claveForanea: AppError.noEncontrado('Publicación') });
   }
 }
