@@ -1,0 +1,111 @@
+/* Estilos globales del foro: variables de color, tipografía y piezas comunes de formularios. */
+:root {
+  --color-fondo: #f5f6f8;
+  --color-superficie: #ffffff;
+  --color-texto: #1f2328;
+  --color-texto-suave: #57606a;
+  --color-borde: #d0d7de;
+  --color-primario: #1f5fbf;
+  --color-primario-oscuro: #184c99;
+  --color-error: #b42318;
+  --color-error-fondo: #fef3f2;
+  --color-exito: #1a7f37;
+  --color-exito-fondo: #effaf2;
+  --radio: 8px;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--color-texto);
+  background: var(--color-fondo);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-fondo);
+  line-height: 1.5;
+}
+
+label {
+  font-weight: 600;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  font: inherit;
+  color: inherit;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid var(--color-primario);
+  outline-offset: 2px;
+}
+
+input[aria-invalid="true"] {
+  border-color: var(--color-error);
+}
+
+.boton {
+  padding: 0.65rem 1rem;
+  font: inherit;
+  font-weight: 600;
+  color: #fff;
+  background: var(--color-primario);
+  border: 0;
+  border-radius: var(--radio);
+  cursor: pointer;
+}
+
+.boton:hover:not(:disabled) {
+  background: var(--color-primario-oscuro);
+}
+
+.boton:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.ayuda {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: 0.9rem;
+}
+
+.error {
+  margin: 0;
+  color: var(--color-error);
+  font-size: 0.9rem;
+}
+
+.aviso {
+  padding: 0.75rem 1rem;
+  border: 1px solid;
+  border-radius: var(--radio);
+}
+
+.aviso p {
+  margin: 0;
+}
+
+.aviso--error {
+  color: var(--color-error);
+  background: var(--color-error-fondo);
+  border-color: currentColor;
+}
+
+.aviso--exito {
+  color: var(--color-exito);
+  background: var(--color-exito-fondo);
+  border-color: currentColor;
+}
