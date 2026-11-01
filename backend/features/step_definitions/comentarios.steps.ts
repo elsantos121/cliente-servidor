@@ -4,13 +4,10 @@ import request from 'supertest';
 import { crearApp } from '../../src/app';
 import { comentar } from '../../src/modules/comentarios/comentarios.service';
 import { prisma } from '../../tests/helpers/db';
+import { listaEntreComillas } from '../support/texto';
 import type { ForoWorld } from '../support/world';
 
 const app = crearApp();
-
-function lista(texto: string): string[] {
-  return [...texto.matchAll(/"([^"]*)"/g)].map((m) => m[1]);
-}
 
 async function rutaComentarios(titulo: string): Promise<string> {
   const { id } = await prisma.publicacion.findFirstOrThrow({ where: { titulo } });
@@ -66,5 +63,5 @@ Then(
 
 Then(/^los comentarios listados son (.+)$/, function (this: ForoWorld, texto: string) {
   const contenidos = this.respuesta?.body.comentarios.map((c: { contenido: string }) => c.contenido);
-  assert.deepEqual(contenidos, lista(texto));
+  assert.deepEqual(contenidos, listaEntreComillas(texto));
 });
