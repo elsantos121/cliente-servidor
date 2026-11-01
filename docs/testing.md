@@ -118,3 +118,142 @@ Prueba manual contra la API en ejecución (`npm run dev`, base `foro_dev`): regi
 **Pendiente:** recorrer la pantalla `/registro` en el navegador con `npm start` (no se pudo levantar `ng serve` desde la sesión de Claude por falta de memoria del entorno).
 
 **Dependencia agregada:** `bcryptjs` 3.0.3 (trae sus propios tipos). `npm audit` sigue mostrando solo los 3 avisos conocidos de `deepmerge-ts`.
+
+### Fase 3 · Iteración 2 — HU-02 Inicio de sesión (2026-10-28)
+
+Rama `feature/HU-02-login` (creada desde `feature/HU-01-registro`, que todavía no estaba integrada). Mismo entorno que la iteración 1.
+
+| Paso | Comando | Resultado real |
+|---|---|---|
+| Gherkin | `npm run test:bdd` | **falla:** 15 escenarios (7 *undefined*), 13 pasos sin definir |
+| RED servicio | `npx vitest run tests/integration/auth.login.service.test.ts` | **9 de 9 fallan:** `iniciarSesion is not a function` |
+| GREEN servicio | ídem + `auth.service.test.ts` | **13 pruebas pasadas** (9 de login/tokens/seed, 4 de registro) |
+| RED middlewares | `npx vitest run tests/unit/autenticar.test.ts` | **falla:** `Cannot find module '../../src/middlewares/autenticar'` |
+| GREEN middlewares | ídem | **8 pruebas pasadas** (401 sin token, esquema, firma, expirado; 403 por rol) |
+| RED endpoints | `npx vitest run tests/integration/login.routes.test.ts` | **8 de 8 fallan:** `expected 404 to be 200/401/400` |
+| GREEN endpoints | ídem | **8 pruebas pasadas** |
+| Pasos BDD | `npm run test:bdd` | **15 escenarios / 69 pasos pasados** |
+| Seed | `npm run prisma:seed` (dos veces, base `foro_dev`) | sin variables: error claro; con variables: `Administrador listo: admin@uni.edu (id 2)` las dos veces (idempotente) |
+| REFACTOR | suite completa | ver tabla siguiente |
+| Pantalla | `npx ng test --watch=false` | 4 archivos, **25 pruebas pasadas** |
+
+Verificación completa al cierre de la iteración:
+
+| Comando | Resultado |
+|---|---|
+| backend `npm run typecheck` / `lint` / `build` | sin errores |
+| backend `npm test` | 7 archivos, **41 pruebas pasadas** |
+| backend `npm run test:bdd` | **15 escenarios / 69 pasos pasados** |
+| frontend `npx ng test --watch=false` | 4 archivos, **25 pruebas pasadas** |
+| frontend `npx ng build` | sin errores (chunks diferidos: login 3,8 kB, registro 5,3 kB) |
+
+Prueba manual en el navegador (`npm run dev` + `ng serve`, base `foro_dev`): registro de un estudiante nuevo → enlace a iniciar sesión → contraseña incorrecta muestra "Correo o contraseña incorrectos" → login correcto muestra el nombre en la cabecera → al recargar la sesión sigue y el token guardado obtiene `200` en `GET /api/usuarios/me` → "Cerrar sesión" borra la sesión guardada.
+
+**Configuración:** `JWT_SECRET` ahora se valida al arrancar (mínimo 16 caracteres, como ya decía `.env.example`). El `.env.test` local tenía uno más corto y las pruebas fallaron con `Configuración inválida: JWT_SECRET: debe tener al menos 16 caracteres` hasta reemplazarlo. El seed necesita `ADMIN_EMAIL` y `ADMIN_PASSWORD` en `.env`.
+
+**Corrección de documentación:** en la iteración 1 la tabla de `docs/historias-usuario.md` marcó por error HU-02 como implementada (la fila menciona HU-01 como dependencia). Con esta iteración la marca pasa a ser correcta.
+
+**Entorno:** durante la iteración la máquina se quedó sin memoria virtual y el motor de Prisma no arrancaba (`0xC0000142`); se resolvió cerrando programas.
+
+### Fase 3 · Iteración 3 — HU-06a Gestión de categorías (2026-10-28)
+
+Rama `feature/HU-06a-categorias` (creada desde `feature/HU-02-login`). Mismo entorno.
+
+| Paso | Comando | Resultado real |
+|---|---|---|
+| Gherkin | `npm run test:bdd` | **falla:** 21 escenarios (6 *undefined*), 10 pasos sin definir |
+| RED servicio | `npx vitest run tests/integration/categorias.service.test.ts` | **falla:** `Cannot find module '../../src/modules/categorias/categorias.service'` |
+| GREEN servicio | ídem | **4 pruebas pasadas**; migración `20261029021208_crear_categorias` aplicada |
+| RED endpoints | `npx vitest run tests/integration/categorias.routes.test.ts` | **11 de 11 fallan:** `expected 404 to be 201/400/403/409` |
+| GREEN endpoints | ídem | **11 pruebas pasadas** |
+| Pasos BDD | `npm run test:bdd` | **21 escenarios / 108 pasos pasados** |
+| REFACTOR | `duplicados.concurrentes.test.ts` contra el código **anterior** | **2 de 2 fallan:** el duplicado simultáneo devolvía el error crudo `P2002` (500) |
+| REFACTOR | suite completa con el cambio | ver tabla siguiente (los 2 casos dan `201` + `409`) |
+| Pantalla | `npx ng test --watch=false` | primera ejecución: **3 fallan** (`(ngSubmit)` no se disparaba en un `<form>` sin `[formGroup]`); corregido → **5 archivos, 31 pruebas pasadas** |
+
+Verificación completa al cierre de la iteración:
+
+| Comando | Resultado |
+|---|---|
+| backend `npm run typecheck` / `lint` / `build` | sin errores |
+| backend `npm test` | 10 archivos, **58 pruebas pasadas** |
+| backend `npm run test:bdd` | **21 escenarios / 108 pasos pasados** |
+| frontend `npx ng test --watch=false` | 5 archivos, **31 pruebas pasadas** |
+| frontend `npx ng build` | sin errores (chunk diferido `admin-categorias` 5,4 kB) |
+
+Prueba manual en el navegador (`npm run dev` + `ng serve`, base `foro_dev`, ancho de móvil 360 px):
+- Sin sesión, `/admin/categorias` lleva a `/login?volver=%2Fadmin%2Fcategorias`.
+- Como administrador del seed: el panel muestra el estado vacío; crear "Matemática" la agrega a la lista; "matemática" muestra "Ya existe una categoría con ese nombre".
+- Como estudiante: la cabecera no muestra "Categorías", `/admin/categorias` redirige fuera del panel y `POST /api/categorias` responde `403 PROHIBIDO`.
+
+**Nota de proceso:** la ejecución de Vitest del frontend falló una vez con `Timeout waiting for worker to respond` por falta de memoria en la máquina; al reintentar corrió normalmente.
+
+### Fase 3 · Iteración 4 — HU-03 Publicaciones (2026-11-01)
+
+Rama `feature/HU-03-publicaciones` (creada desde `feature/HU-06a-categorias`). Mismo entorno.
+
+| Paso | Comando | Resultado real |
+|---|---|---|
+| Gherkin | `npm run test:bdd` | **falla:** 34 escenarios (13 *undefined*), 29 pasos sin definir |
+| RED servicio | `npx vitest run tests/integration/publicaciones.service.test.ts` | **falla:** `Cannot find module '../../src/modules/publicaciones/publicaciones.service'` |
+| GREEN servicio | ídem | **14 pruebas pasadas**; migración `20261101185103_crear_publicaciones` aplicada |
+| RED endpoints | `npx vitest run tests/integration/publicaciones.routes.test.ts` | **22 de 25 fallan** (`expected 404 to be 201/400/401`). Las 3 que pasan son las de "id inexistente → 404": coinciden por casualidad con el 404 genérico de ruta inexistente |
+| GREEN endpoints | ídem | **25 pruebas pasadas** |
+| Pasos BDD | `npm run test:bdd` | **34 escenarios / 224 pasos pasados** |
+| REFACTOR | suite completa antes del cambio | 12 archivos, 97 pruebas · 128 s en total, **64 s de pruebas** · Cucumber **29 s** |
+| REFACTOR | suite completa con `BCRYPT_COSTO=4` | 12 archivos, 97 pruebas · 141 s en total, **27 s de pruebas** · Cucumber **10 s** |
+| Pantallas | `npx ng test --watch=false` | **8 archivos, 48 pruebas pasadas** (inicio 5, detalle 7, formulario 5) |
+
+El tiempo total de `npm test` no bajó porque está dominado por la carga de módulos en esta máquina (37 s de `import`), que bcrypt no afecta; sí bajó el tiempo de ejecución de las pruebas y de Cucumber.
+
+Verificación completa al cierre de la iteración:
+
+| Comando | Resultado |
+|---|---|
+| backend `npm run typecheck` / `lint` / `build` | sin errores |
+| backend `npm test` | 12 archivos, **97 pruebas pasadas** |
+| backend `npm run test:bdd` | **34 escenarios / 224 pasos pasados** |
+| frontend `npx ng test --watch=false` | 8 archivos, **48 pruebas pasadas** |
+| frontend `npx ng build` | sin errores (chunks diferidos: inicio 4,2 kB, detalle 4,8 kB, formulario 6,8 kB) |
+
+Prueba manual en el navegador (`npm run dev` + `ng serve`, base `foro_dev`, ancho 360 px), con la cuenta de prueba de HU-02:
+- El inicio muestra "Todavía no hay publicaciones" y el filtro con las categorías.
+- "Nueva publicación" → crear "Ayuda con límites" en Matemática → lleva al detalle, con "Editar" y "Eliminar".
+- Editar el título → el detalle muestra el título nuevo y la marca "editada".
+- Con otra cuenta de estudiante: el detalle no muestra acciones, `/publicaciones/1/editar` muestra "Solo el autor puede editar esta publicación." y la API responde `403` a `PUT` y `DELETE`.
+- De vuelta con el autor: el inicio lista la publicación; "Eliminar" pide confirmación y, al confirmar, vuelve al inicio vacío.
+- Sin sesión, `/publicaciones/1` muestra "La publicación no existe o fue eliminada.".
+
+**Configuración:** `.env.test` necesita `BCRYPT_COSTO=4` para la mejora de tiempo (opcional; sin la variable se usa 10).
+
+### Fase 3 · Iteración 5 — HU-04 Comentarios (2026-11-01)
+
+Rama `feature/HU-04-comentarios` (creada desde `feature/HU-03-publicaciones`). Mismo entorno.
+
+| Paso | Comando | Resultado real |
+|---|---|---|
+| Gherkin | `npm run test:bdd` | **falla:** 40 escenarios (6 *undefined*), 10 pasos sin definir |
+| RED servicio | `npx vitest run tests/integration/comentarios.service.test.ts` | **falla:** `Cannot find module '../../src/modules/comentarios/comentarios.service'` |
+| GREEN servicio | ídem | **6 pruebas pasadas** (incluye la cascada al borrar la publicación); migración `20261101193456_crear_comentarios` aplicada |
+| RED endpoints | `npx vitest run tests/integration/comentarios.routes.test.ts` | **9 de 14 fallan** (`expected 404 to be 201/400/401/200`). Pasan los 4 casos de "404" (coinciden con el 404 genérico de ruta inexistente) y el que comprueba que el detalle de la publicación sigue respondiendo |
+| GREEN endpoints | ídem | primera ejecución: **13 de 14**; falló "sin token → 401" por un error de la prueba (pasar `undefined` activaba el token por defecto). Corregida la prueba → **14 pasadas** |
+| Pasos BDD | `npm run test:bdd` | **40 escenarios / 274 pasos pasados** |
+| REFACTOR | suite completa | ver tabla siguiente |
+| Pantalla | `npx ng test --watch=false` | **9 archivos, 54 pruebas pasadas** (comentarios 6; el detalle ahora también atiende el pedido de comentarios) |
+
+Verificación completa al cierre de la iteración:
+
+| Comando | Resultado |
+|---|---|
+| backend `npm run typecheck` / `lint` / `build` | sin errores |
+| backend `npm test` | 14 archivos, **117 pruebas pasadas** |
+| backend `npm run test:bdd` | **40 escenarios / 274 pasos pasados** |
+| frontend `npx ng test --watch=false` | 9 archivos, **54 pruebas pasadas** |
+| frontend `npx ng build` | sin errores (chunk diferido `publicacion-detalle` 10,6 kB con comentarios) |
+
+Prueba manual en el navegador (`npm run dev` + `ng serve`, base `foro_dev`), sobre una publicación de prueba creada por API:
+- Sin sesión, el detalle muestra "Comentarios (0)", "Todavía no hay comentarios." y "Iniciá sesión para comentar." (enlace a `/login?volver=%2Fpublicaciones%2F2`).
+- Al iniciar sesión desde ese enlace vuelve al detalle y aparece el formulario.
+- "Comentar" con el campo vacío muestra "El comentario no puede estar vacío" sin llamar a la API.
+- Un comentario válido aparece al final con el nombre del autor ("Comentarios (1)") y sigue ahí al recargar.
+- Al eliminar la publicación por API (`204`), `GET .../comentarios` responde `404` y en `foro_dev` quedan **0** comentarios de esa publicación (cascada).

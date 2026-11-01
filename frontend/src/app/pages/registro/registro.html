@@ -4,7 +4,7 @@
   @if (registrado(); as usuario) {
     <div class="aviso aviso--exito" role="status">
       <p><strong>¡Listo, {{ usuario.nombre }}!</strong></p>
-      <p>Tu cuenta de estudiante con el correo {{ usuario.email }} fue creada. Ya podés iniciar sesión.</p>
+      <p>Tu cuenta de estudiante con el correo {{ usuario.email }} fue creada. Ya podés <a routerLink="/login">iniciar sesión</a>.</p>
     </div>
   } @else {
     <p class="ayuda">Registrate como estudiante para publicar y comentar en el foro.</p>
