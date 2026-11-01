@@ -242,9 +242,21 @@ Cuerpo del `POST`: `{ "contenido": "…" }` (se recortan espacios). La FK a la p
 
 La tabla `reportes` tiene `UNIQUE(autor_id, publicacion_id)` (el `409` sale de esa restricción, `P2002`) y la FK a la publicación es `CASCADE`. El estado (`PENDIENTE`, `RESUELTO`, `DESCARTADO`) lo cambia un administrador en HU-06b. En el frontend la opción de denunciar la ven los usuarios con sesión que no son el autor; el backend no impone esa restricción.
 
+#### Moderación de reportes (HU-06b)
+
+Router `/api/reportes`, protegido completo con `autenticar` + `autorizar('ADMIN')`. Un reporte se devuelve como `{ "id", "motivo", "estado", "creadoEn", "actualizadoEn", "publicacion": { "id", "titulo" }, "autor": { "id", "nombre" } }` (el autor es quien denunció).
+
+| Método y ruta | Éxito | Errores |
+|---|---|---|
+| `GET /api/reportes?estado=` | `200` `{ "reportes": [...] }`, más antiguos primero; sin `estado` lista los `PENDIENTE` | `400` estado inválido · `401` · `403` (estudiante) |
+| `PATCH /api/reportes/:id` | `200` `{ "reporte": {...} }` | `400` si `estado` no es `RESUELTO` ni `DESCARTADO` (un reporte no vuelve a `PENDIENTE`) · `401` · `403` · `404` |
+| `DELETE /api/publicaciones/:id` | `204` (ya existía en HU-03: autor o ADMIN) | — |
+
+Cuerpo del `PATCH`: `{ "estado": "RESUELTO" | "DESCARTADO" }`. Eliminar la publicación denunciada borra en cascada sus comentarios y **todos** sus reportes, así que esos reportes desaparecen del listado en lugar de quedar como `RESUELTO`; conservar el historial (borrado lógico) es la feature futura anotada en el plan. El reporte inexistente se detecta con `P2025` en el mismo `update` (`traducirErrorPrisma(error, { inexistente })`).
+
 #### Traducción de errores de Prisma
 
-`traducirErrorPrisma(error, { unico?, claveForanea? })` (`src/db/errores.ts`) convierte `P2002` y `P2003` en el `AppError` que indica cada servicio y deja pasar cualquier otro error (que termina en `500`). La usan registro, categorías, publicaciones, comentarios y denuncias.
+`traducirErrorPrisma(error, { unico?, claveForanea? })` (`src/db/errores.ts`) convierte `P2002`, `P2003` y `P2025` en el `AppError` que indica cada servicio y deja pasar cualquier otro error (que termina en `500`). La usan registro, categorías, publicaciones, comentarios, denuncias y moderación.
 
 #### Costo de bcrypt
 

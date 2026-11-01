@@ -5,6 +5,7 @@
       <a routerLink="/publicaciones/nueva">Nueva publicación</a>
       @if (sesion.esAdmin()) {
         <a routerLink="/admin/categorias">Categorías</a>
+        <a routerLink="/admin/reportes">Reportes</a>
       }
       <span class="usuario">{{ usuario.nombre }}@if (sesion.esAdmin()) { <span class="etiqueta">admin</span>}</span>
       <button type="button" class="enlace" (click)="cerrarSesion()">Cerrar sesión</button>

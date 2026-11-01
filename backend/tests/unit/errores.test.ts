@@ -19,6 +19,10 @@ describe('traducirErrorPrisma', () => {
     expect(traducirErrorPrisma(errorPrisma('P2003'), { claveForanea: noEncontrado })).toBe(noEncontrado);
   });
 
+  it('P2025 (registro inexistente) se traduce al error indicado en "inexistente"', () => {
+    expect(traducirErrorPrisma(errorPrisma('P2025'), { inexistente: noEncontrado })).toBe(noEncontrado);
+  });
+
   it('un código sin traducción indicada se devuelve tal cual', () => {
     const original = errorPrisma('P2003');
 

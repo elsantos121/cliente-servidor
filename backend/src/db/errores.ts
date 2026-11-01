@@ -14,6 +14,11 @@ export function esClaveForaneaInexistente(error: unknown): boolean {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003';
 }
 
+/** true si la operación necesitaba un registro que no existe (P2025), p. ej. un update por id. */
+export function esRegistroInexistente(error: unknown): boolean {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025';
+}
+
 /**
  * Traduce los errores de Prisma que son culpa de los datos a un AppError con su código HTTP;
  * cualquier otro error se devuelve tal cual (terminará en un 500). Uso:
@@ -21,9 +26,10 @@ export function esClaveForaneaInexistente(error: unknown): boolean {
  */
 export function traducirErrorPrisma(
   error: unknown,
-  traducciones: { unico?: AppError; claveForanea?: AppError },
+  traducciones: { unico?: AppError; claveForanea?: AppError; inexistente?: AppError },
 ): unknown {
   if (traducciones.unico && esViolacionUnica(error)) return traducciones.unico;
   if (traducciones.claveForanea && esClaveForaneaInexistente(error)) return traducciones.claveForanea;
+  if (traducciones.inexistente && esRegistroInexistente(error)) return traducciones.inexistente;
   return error;
 }
