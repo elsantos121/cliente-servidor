@@ -85,6 +85,18 @@ describe('Login (HU-02)', () => {
     expect(router.url).toBe('/');
   });
 
+  it('si llegó porque la sesión expiró, lo explica (fase 4)', async () => {
+    await crear('/login?motivo=sesion-expirada&volver=%2Fadmin%2Freportes');
+
+    expect(pantalla().querySelector('[role="status"]')?.textContent).toContain('Tu sesión expiró');
+  });
+
+  it('sin motivo no muestra el aviso de sesión expirada', async () => {
+    await crear('/login');
+
+    expect(pantalla().textContent).not.toContain('Tu sesión expiró');
+  });
+
   it('con credenciales incorrectas (401) muestra el mensaje genérico del servidor', async () => {
     await crear();
     await enviarCredenciales('ana@uni.edu', 'incorrecta');
