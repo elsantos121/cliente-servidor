@@ -325,3 +325,66 @@ Prueba manual en el navegador (`npm run dev` + `ng serve`, base `foro_dev`), con
 - En `foro_dev`: el reporte 1 quedó `DESCARTADO`, la publicación 4 ya no existe y no quedó ningún reporte suyo (cascada).
 
 **Con esta iteración quedan implementadas las siete historias de la fase 3.**
+
+## Fase 4 — Integración (2026-11-01)
+
+Rama `feature/fase-4-integracion`, creada desde `develop` con las siete historias integradas (PR #1, #7, #8 y #9). Objetivo del plan: recorrer los flujos completos contra la API real, verificar CORS y los mensajes de error en pantalla.
+
+### Prueba automática del flujo completo
+
+`backend/features/integracion.feature`: un escenario que recorre HU-06a → HU-01 → HU-02 → HU-03 → HU-04 → HU-05 → HU-06b en orden (admin crea categoría, dos estudiantes se registran, una publica, el otro comenta y denuncia, un estudiante no puede ver reportes, el admin lista el reporte y elimina la publicación). Usa los pasos que ya existían más uno nuevo (`no se lista ninguna publicación`), así queda como prueba de regresión de la integración.
+
+| Comando | Resultado real |
+|---|---|
+| `npm run test:bdd` (primera vez) | 53 escenarios, **1 falla**: el último paso usaba `""` para "lista vacía" y el helper lo leía como `['']`; la API devolvía `[]`, que es lo correcto. Se reemplazó por un paso explícito |
+| `npm run test:bdd` | **53 escenarios / 423 pasos pasados** |
+
+### Recorrido en el navegador (`npm run dev` + `ng serve`, base `foro_dev`)
+
+Con cuentas nuevas creadas desde la pantalla de registro:
+
+1. "Carla Fase4" se registra en `/registro` → "¡Listo, Carla Fase4!".
+2. Inicia sesión y publica "Fase 4: vendo apuntes" en Matemática → detalle con "Editar" y "Eliminar".
+3. Cierra sesión; "Dario Fase4" se registra e inicia sesión con `?volver=/publicaciones/5` → vuelve al detalle.
+4. Dario comenta ("Comentarios (1)") y denuncia → "Gracias. Tu denuncia quedó registrada…".
+5. El administrador abre `/admin/reportes`, ve la denuncia de Dario y elimina la publicación con confirmación → "No hay reportes pendientes.".
+6. En `foro_dev`: la publicación 5, su comentario y su reporte ya no existen (cascada).
+
+### CORS
+
+| Preflight `OPTIONS /api/publicaciones` | `Access-Control-Allow-Origin` | Efecto en el navegador |
+|---|---|---|
+| `Origin: http://localhost:4200` | `http://localhost:4200` | permitido |
+| `Origin: http://sitio-ajeno.example` | `http://localhost:4200` (no coincide) | el navegador bloquea la respuesta |
+
+`Access-Control-Allow-Headers` incluye `authorization` y `content-type`, que usa el interceptor.
+
+### Mensajes de error en pantalla
+
+| Situación | Resultado |
+|---|---|
+| Token con firma alterada y una acción protegida | se borra la sesión y se va a `/login?…&volver=…` |
+| API detenida, intentar iniciar sesión | "No se pudo conectar con el servidor. Intentá de nuevo en unos minutos." |
+| API detenida, abrir el inicio | "No se pudieron cargar las publicaciones." con "Reintentar"; al levantar la API y reintentar, carga |
+
+### Hallazgos y correcciones (TDD)
+
+| Hallazgo | RED | GREEN |
+|---|---|---|
+| Al cerrarse una sesión inválida, el login no explicaba por qué el usuario estaba ahí | `auth.spec.ts`: `expected null to be 'sesion-expirada'`; `login.spec.ts`: sin el aviso | el interceptor agrega `?motivo=sesion-expirada` y el login muestra "Tu sesión expiró o ya no es válida. Iniciá sesión de nuevo para continuar." |
+| Si con la API caída fallaban también las categorías, "Reintentar" recuperaba el listado pero el filtro quedaba solo con "Todas" hasta recargar la página | `inicio.spec.ts`: `Expected one matching request for … /api/categorias, found none` | "Reintentar" vuelve a pedir las categorías si habían fallado |
+
+Primera ejecución con las pruebas nuevas: **5 fallas** (las 3 esperadas, más 2 arrastradas por la petición que quedó abierta en la prueba del inicio). Con la corrección: **11 archivos, 72 pruebas pasadas**; `ng build` sin errores. Ambas correcciones se confirmaron en el navegador: la publicación con token alterado lleva al login con el aviso, y el filtro recupera "Matemática" al reintentar.
+
+Verificación al cierre de la fase:
+
+| Comando | Resultado |
+|---|---|
+| backend `npm run typecheck` / `lint` | sin errores |
+| backend `npm run test:bdd` | **53 escenarios / 423 pasos pasados** |
+| frontend `npx ng test --watch=false` | 11 archivos, **72 pruebas pasadas** |
+| frontend `npx ng build` | sin errores |
+
+El código del backend no cambió en esta fase (solo `features/`); su suite Vitest sigue siendo la verificada en HU-06b (19 archivos, 155 pruebas).
+
+**Nota de la herramienta:** el clic simulado del navegador de pruebas no siempre acertaba en enlaces que ocupan dos líneas (el centro de su rectángulo cae fuera del texto). Se comprobó con `elementFromPoint` y un clic por JavaScript que el enlace funciona; no es un defecto de la aplicación.
