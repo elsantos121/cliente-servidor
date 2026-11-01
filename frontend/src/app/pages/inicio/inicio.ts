@@ -24,11 +24,25 @@ export class Inicio {
   protected readonly cargando = signal(true);
   protected readonly error = signal<string | null>(null);
 
+  private readonly categoriasService = inject(CategoriasService);
+  private categoriasFallaron = false;
+
   constructor() {
-    // Si fallan las categorías, el listado igual funciona: solo falta el filtro.
-    inject(CategoriasService)
-      .listar()
-      .subscribe({ next: (categorias) => this.categorias.set(categorias), error: () => undefined });
+    this.cargarCategorias();
+    this.cargar();
+  }
+
+  /** Si fallan las categorías, el listado igual funciona: solo falta el filtro (y "Reintentar" las vuelve a pedir). */
+  private cargarCategorias(): void {
+    this.categoriasFallaron = false;
+    this.categoriasService.listar().subscribe({
+      next: (categorias) => this.categorias.set(categorias),
+      error: () => (this.categoriasFallaron = true),
+    });
+  }
+
+  protected reintentar(): void {
+    if (this.categoriasFallaron) this.cargarCategorias();
     this.cargar();
   }
 
