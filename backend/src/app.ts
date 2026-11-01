@@ -4,6 +4,7 @@ import { leerEnv } from './config/env';
 import { errorHandler, rutaNoEncontrada } from './errors/errorHandler';
 import { authRouter } from './modules/auth';
 import { categoriasRouter } from './modules/categorias';
+import { publicacionesRouter } from './modules/publicaciones';
 import { usuariosRouter } from './modules/usuarios';
 
 /**
@@ -15,6 +16,7 @@ const modulos: Array<{ ruta: string; router: Router }> = [
   { ruta: '/api/auth', router: authRouter }, // HU-01 / HU-02
   { ruta: '/api/usuarios', router: usuariosRouter }, // HU-02
   { ruta: '/api/categorias', router: categoriasRouter }, // HU-06a
+  { ruta: '/api/publicaciones', router: publicacionesRouter }, // HU-03
 ];
 
 export function crearApp() {
