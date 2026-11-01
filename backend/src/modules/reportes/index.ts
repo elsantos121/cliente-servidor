@@ -1,1 +1,1 @@
-export { denunciasRouter } from './reportes.routes';
+export { denunciasRouter, moderacionRouter } from './reportes.routes';

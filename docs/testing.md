@@ -290,3 +290,38 @@ Prueba manual en el navegador (`npm run dev` + `ng serve`, base `foro_dev`), sob
 - Recargar y denunciar de nuevo → "Ya denunciaste esta publicación. Un administrador la va a revisar." (sin mensaje de error).
 - Con la cuenta del autor: se ven "Editar" y "Eliminar" pero no la opción de denunciar.
 - En `foro_dev` queda **una** denuncia `PENDIENTE` de esa publicación, del usuario que denunció. Se dejó a propósito para probar la moderación en HU-06b.
+
+### Fase 3 · Iteración 7 — HU-06b Moderación de reportes (2026-11-01)
+
+Rama `feature/HU-06b-moderacion`, creada desde `develop` después de integrar HU-02 a HU-05 (PR #7 y #8; se comprobó que el contenido de `develop` es idéntico al de `feature/HU-05-denuncias` ya verificado). Mismo entorno.
+
+| Paso | Comando | Resultado real |
+|---|---|---|
+| Gherkin | `npm run test:bdd` | **falla:** 52 escenarios (7 *undefined*), 17 pasos sin definir |
+| RED servicio | `npx vitest run tests/integration/moderacion.service.test.ts` | **5 de 5 fallan:** `listarReportes is not a function` / `cambiarEstado is not a function` |
+| GREEN servicio | ídem + `reportes.service.test.ts` | **10 pruebas pasadas** |
+| RED endpoints | `npx vitest run tests/integration/moderacion.routes.test.ts` | **11 de 13 fallan** (`expected 404 to be 200/400/403`, `expected undefined to deeply equal []`); pasan los 2 casos de "404", que coinciden con el 404 genérico de ruta inexistente |
+| GREEN endpoints | ídem + `reportes.routes.test.ts` | **23 pruebas pasadas** |
+| Pasos BDD | `npm run test:bdd` | **52 escenarios / 393 pasos pasados** |
+| REFACTOR | suite completa (`cambiarEstado` en una consulta; `errores.test.ts` +1 caso P2025) | ver tabla siguiente |
+| Pantalla | `npx ng test --watch=false` | **11 archivos, 69 pruebas pasadas** (panel de reportes 7) |
+
+Verificación completa al cierre de la iteración:
+
+| Comando | Resultado |
+|---|---|
+| backend `npm run typecheck` / `lint` / `build` | sin errores |
+| backend `npm test` | 19 archivos, **155 pruebas pasadas** |
+| backend `npm run test:bdd` | **52 escenarios / 393 pasos pasados** |
+| frontend `npx ng test --watch=false` | 11 archivos, **69 pruebas pasadas** |
+| frontend `npx ng build` | sin errores (chunk diferido `admin-reportes` 7,1 kB) |
+
+Prueba manual en el navegador (`npm run dev` + `ng serve`, base `foro_dev`), con la denuncia que quedó de HU-05 y otra creada por API; sesión de administrador cargada con un token obtenido por API (el login ya se probó en HU-02):
+- `/admin/reportes` lista los 2 reportes pendientes con publicación, motivo y quién denunció.
+- "Descartar" en el primero → "Reporte sobre «Prueba de denuncias» descartado." y desaparece de pendientes.
+- "Eliminar publicación" en el segundo pide confirmación; al confirmar → "Se eliminó la publicación «Spam de prueba» y sus reportes." y "No hay reportes pendientes.".
+- El filtro "Descartados" muestra el reporte descartado, sin acciones.
+- Como estudiante: la cabecera no muestra "Reportes", `/admin/reportes` redirige al inicio y la API responde `403` a `GET /api/reportes` y `PATCH /api/reportes/1`.
+- En `foro_dev`: el reporte 1 quedó `DESCARTADO`, la publicación 4 ya no existe y no quedó ningún reporte suyo (cascada).
+
+**Con esta iteración quedan implementadas las siete historias de la fase 3.**

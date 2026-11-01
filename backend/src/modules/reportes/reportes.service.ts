@@ -1,3 +1,4 @@
+import type { EstadoReporte } from '@prisma/client';
 import { traducirErrorPrisma } from '../../db/errores';
 import { prisma } from '../../db/prisma';
 import { AppError } from '../../errors/AppError';
@@ -22,5 +23,30 @@ export async function denunciar(publicacionId: number, autorId: number, datos: {
       unico: AppError.conflicto('Ya denunciaste esta publicación'),
       claveForanea: AppError.noEncontrado('Publicación'),
     });
+  }
+}
+
+/** Lo que ve un administrador al moderar: además de la publicación, quién denunció. */
+const camposModeracion = {
+  ...camposPublicos,
+  actualizadoEn: true,
+  autor: { select: { id: true, nombre: true } },
+} as const;
+
+/** HU-06b: un administrador lista los reportes de un estado (por defecto PENDIENTE), más antiguos primero. */
+export function listarReportes(filtro: { estado?: EstadoReporte }) {
+  return prisma.reporte.findMany({
+    where: { estado: filtro.estado ?? 'PENDIENTE' },
+    select: camposModeracion,
+    orderBy: [{ creadoEn: 'asc' }, { id: 'asc' }],
+  });
+}
+
+/** HU-06b: un administrador marca un reporte como RESUELTO o DESCARTADO. */
+export async function cambiarEstado(id: number, datos: { estado: Exclude<EstadoReporte, 'PENDIENTE'> }) {
+  try {
+    return await prisma.reporte.update({ where: { id }, data: { estado: datos.estado }, select: camposModeracion });
+  } catch (error) {
+    throw traducirErrorPrisma(error, { inexistente: AppError.noEncontrado('Reporte') });
   }
 }
