@@ -13,7 +13,7 @@
 | 3 | HU-06a | Gestión de categorías (admin) | Alta | HU-02 | Implementada (pendiente PR a develop) |
 | 4 | HU-03 | Publicaciones (crear, consultar, editar, eliminar) | Alta | HU-02, HU-06a | Implementada (pendiente PR a develop) |
 | 5 | HU-04 | Comentarios | Media | HU-03 | Implementada (pendiente PR a develop) |
-| 6 | HU-05 | Denuncia de publicaciones | Media | HU-03 | Pendiente |
+| 6 | HU-05 | Denuncia de publicaciones | Media | HU-03 | Implementada (pendiente PR a develop) |
 | 7 | HU-06b | Moderación de reportes (admin) | Media | HU-05 | Pendiente |
 
 HU-06 original ("gestionar categorías y revisar reportes") se dividió en HU-06a y HU-06b por ser demasiado grande: son dos módulos independientes y la segunda depende de HU-05.
@@ -138,6 +138,7 @@ Se divide en tareas: **(a)** listar y ver detalle · **(b)** crear · **(c)** ed
 ## HU-05 — Denuncia de publicaciones
 
 - **Prioridad:** Media
+- **Estado:** implementada en `feature/HU-05-denuncias` (API + botón y formulario en el detalle); falta integrarla a `develop`.
 - **Descripción:** Como estudiante, quiero denunciar una publicación para informar contenido inapropiado.
 
 **Criterios de aceptación**
@@ -147,7 +148,7 @@ Se divide en tareas: **(a)** listar y ver detalle · **(b)** crear · **(c)** ed
 
 **Escenarios:** ✅ denuncia · ❌ duplicada · ❌ publicación inexistente · ❌ motivo vacío.
 
-**Pruebas relacionadas:** `reportes.service.test.ts`, `reportes.routes.test.ts`, `features/reportes.feature`.
+**Pruebas relacionadas:** `tests/integration/reportes.service.test.ts` (5, incluye cascada), `tests/integration/reportes.routes.test.ts` (10), `features/reportes.feature` (5 escenarios), `frontend/src/app/pages/publicacion-detalle/denuncia.spec.ts`.
 
 **Dependencias:** HU-03.
 
