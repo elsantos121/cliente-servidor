@@ -6,6 +6,7 @@ import { ErrorApi, Publicacion } from '../../core/modelos';
 import { PublicacionesService } from '../../core/publicaciones.service';
 import { SesionService } from '../../core/sesion.service';
 import { Comentarios } from './comentarios';
+import { Denuncia } from './denuncia';
 
 /**
  * HU-03: detalle de una publicación (/publicaciones/:id). El autor ve "Editar" y "Eliminar";
@@ -13,7 +14,7 @@ import { Comentarios } from './comentarios';
  */
 @Component({
   selector: 'app-publicacion-detalle',
-  imports: [RouterLink, DatePipe, Comentarios],
+  imports: [RouterLink, DatePipe, Comentarios, Denuncia],
   templateUrl: './publicacion-detalle.html',
   styleUrl: './publicacion-detalle.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -37,6 +38,8 @@ export class PublicacionDetalle implements OnInit {
     () => !!this.publicacion() && this.publicacion()!.autor.id === this.sesion.usuario()?.id,
   );
   protected readonly puedeEliminar = computed(() => this.esAutor() || this.sesion.esAdmin());
+  /** HU-05: denuncian los usuarios con sesión que no son el autor (el backend no lo exige). */
+  protected readonly puedeDenunciar = computed(() => this.sesion.autenticado() && !this.esAutor());
 
   ngOnInit(): void {
     this.publicacionesService.obtener(Number(this.id())).subscribe({

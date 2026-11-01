@@ -122,6 +122,20 @@ describe('PublicacionDetalle (HU-03)', () => {
     expect(pantalla().querySelector('[role="alert"]')?.textContent).toContain('Solo el autor');
   });
 
+  it('la opción de denunciar la ven otros usuarios con sesión, no el autor ni un visitante (HU-05)', async () => {
+    await abrir(beto);
+    expect(pantalla().querySelector('app-denuncia')).toBeTruthy();
+  });
+
+  it('el autor y un visitante no ven la opción de denunciar (HU-05)', async () => {
+    await abrir(ana);
+    expect(pantalla().querySelector('app-denuncia')).toBeNull();
+
+    TestBed.inject(SesionService).cerrar();
+    await fixture.whenStable();
+    expect(pantalla().querySelector('app-denuncia')).toBeNull();
+  });
+
   it('una publicación inexistente muestra un aviso', async () => {
     await abrir(null, 404);
 
