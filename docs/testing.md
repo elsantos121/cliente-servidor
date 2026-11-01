@@ -25,8 +25,9 @@ Commits sugeridos: `test(HU-01): registro con correo duplicado (RED)` → `feat(
 
 - Base separada: `foro_test` (variable `DATABASE_URL` en `backend/.env.test`).
 - Protección: el script de pruebas **se niega a ejecutar** si la URL no contiene `_test`, para no borrar una base de desarrollo o real.
-- Reinicio: `prisma migrate reset --force --skip-seed` antes de la suite; cada prueba limpia las tablas que usa (`TRUNCATE ... CASCADE`).
-- En GitHub Actions se usa un servicio PostgreSQL efímero.
+- Migraciones: `tests/setup/global.ts` aplica `prisma migrate deploy` una vez antes de la suite de Vitest.
+- Limpieza: cada prueba (y cada escenario de Cucumber) empieza con `limpiarBase()`, que hace `TRUNCATE ... RESTART IDENTITY CASCADE` de todas las tablas del foro.
+- En GitHub Actions se usa un servicio PostgreSQL efímero (ver "Integración continua").
 
 ## Casos mínimos a cubrir
 
@@ -49,6 +50,22 @@ npm run test:bdd      # escenarios Cucumber
 npm run typecheck
 npm run lint
 ```
+
+## Integración continua (GitHub Actions)
+
+Workflow: `.github/workflows/ci.yml`. Corre en cada **push** y cada **pull request** a `develop` y `main`, con dos jobs en paralelo:
+
+| Job | Entorno | Pasos |
+|---|---|---|
+| Backend (API + PostgreSQL) | Ubuntu, Node 22.18.0, servicio `postgres:16` con base `foro_test` | `npm ci` → `prisma generate` → `prisma migrate deploy` → typecheck → lint → `npm test` → `npm run test:bdd` → build |
+| Frontend (Angular) | Ubuntu, Node 22.18.0 | `npm ci` → `ng test --watch=false` → `ng build` |
+
+- La base de CI es efímera: se crea vacía en cada ejecución y se descarta al terminar. Su nombre termina en `_test`, así que el guard de las pruebas la acepta.
+- Las variables (`DATABASE_URL`, `JWT_SECRET`, `BCRYPT_COSTO=4`, …) están en el workflow con valores **solo para CI**; no hay secretos reales. En CI no existe `.env.test`: `cargarEnvTest()` no encuentra el archivo y usa las variables del entorno.
+- Node 22.18.0 es la versión que usa el equipo (ver la decisión sobre Angular 21 en el plan).
+- Un push nuevo a la misma rama cancela la ejecución anterior.
+
+**Regla del equipo: no se integra a `main` con el CI en rojo.** Para que GitHub la haga cumplir, un administrador del repositorio activa en *Settings → Branches → Add branch protection rule* (rama `main`, y también `develop`): "Require status checks to pass before merging" con los checks **Backend (API + PostgreSQL)** y **Frontend (Angular)**. Los checks aparecen en la lista después de la primera ejecución del workflow.
 
 ## Registro de ejecuciones reales
 
@@ -388,3 +405,23 @@ Verificación al cierre de la fase:
 El código del backend no cambió en esta fase (solo `features/`); su suite Vitest sigue siendo la verificada en HU-06b (19 archivos, 155 pruebas).
 
 **Nota de la herramienta:** el clic simulado del navegador de pruebas no siempre acertaba en enlaces que ocupan dos líneas (el centro de su rectángulo cae fuera del texto). Se comprobó con `elementFromPoint` y un clic por JavaScript que el enlace funciona; no es un defecto de la aplicación.
+
+## Fase 5 — Integración continua (2026-11-01)
+
+Rama `feature/fase-5-ci`, creada desde `main` (que ya tiene las siete historias y la fase 4: PR #11 y #12). Se agregó `.github/workflows/ci.yml` (ver "Integración continua" más arriba).
+
+Antes de subirlo, se simuló cada job en un **clon limpio** del repositorio, **sin archivos `.env`** y con las mismas variables de entorno del workflow, para comprobar que las pruebas no dependen de nada que solo exista en una máquina. La única diferencia con GitHub Actions es que el backend usó la base `foro_test` local en lugar del contenedor efímero.
+
+| Job | Paso | Resultado real |
+|---|---|---|
+| Backend | `npm ci` · `prisma generate` · `prisma migrate deploy` · typecheck · lint | OK |
+| Backend | `npm test` | 19 archivos, **155 pruebas pasadas** |
+| Backend | `npm run test:bdd` | **53 escenarios / 423 pasos pasados** |
+| Backend | `npm run build` | OK |
+| Frontend | `npm ci` | OK |
+| Frontend | `ng test --watch=false` | 11 archivos, **72 pruebas pasadas** |
+| Frontend | `ng build` | OK |
+
+El YAML se validó con `js-yaml` (disparadores `push` y `pull_request` a `develop` y `main`, dos jobs con los pasos esperados).
+
+**Nota de entorno:** el primer intento de clonar para la simulación del frontend falló en Windows con `Filename too long` (la ruta temporal es muy larga); se resolvió clonando con `core.longpaths=true`. No afecta a GitHub Actions, que corre en Ubuntu.
