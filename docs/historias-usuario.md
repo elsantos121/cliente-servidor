@@ -11,7 +11,7 @@
 | 1 | HU-01 | Registro de estudiantes | Alta | — | Implementada (pendiente PR a develop) |
 | 2 | HU-02 | Inicio de sesión | Alta | HU-01 | Implementada (pendiente PR a develop) |
 | 3 | HU-06a | Gestión de categorías (admin) | Alta | HU-02 | Implementada (pendiente PR a develop) |
-| 4 | HU-03 | Publicaciones (crear, consultar, editar, eliminar) | Alta | HU-02, HU-06a | Pendiente |
+| 4 | HU-03 | Publicaciones (crear, consultar, editar, eliminar) | Alta | HU-02, HU-06a | Implementada (pendiente PR a develop) |
 | 5 | HU-04 | Comentarios | Media | HU-03 | Pendiente |
 | 6 | HU-05 | Denuncia de publicaciones | Media | HU-03 | Pendiente |
 | 7 | HU-06b | Moderación de reportes (admin) | Media | HU-05 | Pendiente |
@@ -98,6 +98,7 @@ Una historia está terminada cuando:
 ## HU-03 — Publicaciones
 
 - **Prioridad:** Alta
+- **Estado:** implementada en `feature/HU-03-publicaciones` (API + pantallas `/`, `/publicaciones/:id`, `/publicaciones/nueva`, `/publicaciones/:id/editar`); falta integrarla a `develop`.
 - **Descripción:** Como estudiante, quiero crear, consultar, editar y eliminar mis publicaciones para compartir información con la comunidad.
 
 Se divide en tareas: **(a)** listar y ver detalle · **(b)** crear · **(c)** editar/eliminar propias.
@@ -109,7 +110,7 @@ Se divide en tareas: **(a)** listar y ver detalle · **(b)** crear · **(c)** ed
 
 **Escenarios:** ✅ crear, listar, ver detalle, editar propia, eliminar propia · ❌ título vacío · ❌ categoría inexistente · ❌ editar ajena · ❌ eliminar ajena · ❌ id inexistente.
 
-**Pruebas relacionadas:** `publicaciones.service.test.ts`, `publicaciones.routes.test.ts`, `features/publicaciones.feature`.
+**Pruebas relacionadas:** `tests/integration/publicaciones.service.test.ts` (14), `tests/integration/publicaciones.routes.test.ts` (25), `features/publicaciones.feature` (13 escenarios), `frontend/src/app/pages/inicio/inicio.spec.ts`, `publicacion-detalle.spec.ts`, `publicacion-form.spec.ts`.
 
 **Dependencias:** HU-02, HU-06a.
 

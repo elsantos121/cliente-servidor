@@ -11,6 +11,8 @@ const esquemaEnv = z.object({
   CORS_ORIGIN: z.string().min(1).default('http://localhost:4200'),
   JWT_SECRET: z.string().min(16, 'debe tener al menos 16 caracteres'),
   JWT_EXPIRES_IN: z.string().min(1).default('2h'),
+  // Rondas de bcrypt: 10 en desarrollo y producción; las pruebas usan 4 para ir más rápido.
+  BCRYPT_COSTO: z.coerce.number().int().min(4).max(14).default(10),
 });
 
 export type Env = z.infer<typeof esquemaEnv>;
