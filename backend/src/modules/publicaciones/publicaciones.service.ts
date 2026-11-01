@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client';
+import { esClaveForaneaInexistente } from '../../db/errores';
 import { prisma } from '../../db/prisma';
 import { AppError } from '../../errors/AppError';
 import type { UsuarioToken } from '../auth/auth.service';
@@ -78,7 +78,7 @@ async function buscarAutor(id: number) {
 
 /** La FK de categoría falla (P2003) si la categoría no existe: es un dato inválido, no un 500. */
 function traducirCategoriaInexistente(error: unknown): unknown {
-  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+  if (esClaveForaneaInexistente(error)) {
     return AppError.validacion({ categoriaId: 'La categoría no existe' });
   }
   return error;
