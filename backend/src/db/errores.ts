@@ -8,3 +8,8 @@ import { Prisma } from '@prisma/client';
 export function esViolacionUnica(error: unknown): boolean {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002';
 }
+
+/** true si falla una clave foránea (P2003): se referenció un registro que no existe. */
+export function esClaveForaneaInexistente(error: unknown): boolean {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003';
+}

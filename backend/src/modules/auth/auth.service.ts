@@ -20,12 +20,15 @@ export const camposPublicosUsuario = {
   creadoEn: true,
 } as const;
 
-const COSTO_BCRYPT = 10;
+/** Rondas de bcrypt (BCRYPT_COSTO): se leen al usarse, no al importar el módulo. */
+function costoBcrypt(): number {
+  return leerEnv().BCRYPT_COSTO;
+}
 
 /** HU-01: crea una cuenta de ESTUDIANTE. El rol nunca se toma de los datos recibidos. */
 export async function registrar(datos: DatosRegistro) {
   const email = datos.email.toLowerCase();
-  const passwordHash = await bcrypt.hash(datos.password, COSTO_BCRYPT);
+  const passwordHash = await bcrypt.hash(datos.password, costoBcrypt());
   try {
     return await prisma.usuario.create({
       data: { nombre: datos.nombre, email, passwordHash, rol: 'ESTUDIANTE' },
@@ -48,15 +51,19 @@ export interface UsuarioToken {
 const MENSAJE_CREDENCIALES = 'Correo o contraseña incorrectos';
 
 // Hash de relleno: si el correo no existe se compara igual, para que la respuesta
-// tarde lo mismo y no revele qué correos están registrados.
-const HASH_RELLENO = bcrypt.hashSync('contraseña-de-relleno', COSTO_BCRYPT);
+// tarde lo mismo y no revele qué correos están registrados. Usa el mismo costo que los reales.
+let hashRelleno: string | undefined;
+function obtenerHashRelleno(): string {
+  hashRelleno ??= bcrypt.hashSync('contraseña-de-relleno', costoBcrypt());
+  return hashRelleno;
+}
 
 /** HU-02: valida las credenciales y devuelve un JWT con los datos públicos del usuario. */
 export async function iniciarSesion(credenciales: DatosLogin) {
   const encontrado = await prisma.usuario.findUnique({
     where: { email: credenciales.email.toLowerCase() },
   });
-  const coincide = await bcrypt.compare(credenciales.password, encontrado?.passwordHash ?? HASH_RELLENO);
+  const coincide = await bcrypt.compare(credenciales.password, encontrado?.passwordHash ?? obtenerHashRelleno());
   if (!encontrado || !coincide) {
     throw AppError.noAutenticado(MENSAJE_CREDENCIALES);
   }
@@ -95,7 +102,7 @@ export function verificarToken(token: string): UsuarioToken {
  */
 export async function asegurarAdmin(datos: DatosRegistro) {
   const email = datos.email.toLowerCase();
-  const passwordHash = await bcrypt.hash(datos.password, COSTO_BCRYPT);
+  const passwordHash = await bcrypt.hash(datos.password, costoBcrypt());
   return prisma.usuario.upsert({
     where: { email },
     create: { nombre: datos.nombre, email, passwordHash, rol: 'ADMIN' },
