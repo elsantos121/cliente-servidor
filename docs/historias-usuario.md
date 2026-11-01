@@ -14,7 +14,7 @@
 | 4 | HU-03 | Publicaciones (crear, consultar, editar, eliminar) | Alta | HU-02, HU-06a | Implementada (pendiente PR a develop) |
 | 5 | HU-04 | Comentarios | Media | HU-03 | Implementada (pendiente PR a develop) |
 | 6 | HU-05 | Denuncia de publicaciones | Media | HU-03 | Implementada (pendiente PR a develop) |
-| 7 | HU-06b | Moderación de reportes (admin) | Media | HU-05 | Pendiente |
+| 7 | HU-06b | Moderación de reportes (admin) | Media | HU-05 | Implementada (pendiente PR a develop) |
 
 HU-06 original ("gestionar categorías y revisar reportes") se dividió en HU-06a y HU-06b por ser demasiado grande: son dos módulos independientes y la segunda depende de HU-05.
 
@@ -157,6 +157,7 @@ Se divide en tareas: **(a)** listar y ver detalle · **(b)** crear · **(c)** ed
 ## HU-06b — Moderación de reportes
 
 - **Prioridad:** Media
+- **Estado:** implementada en `feature/HU-06b-moderacion` (API + panel `/admin/reportes`); falta integrarla a `develop`.
 - **Descripción:** Como administrador, quiero revisar los reportes pendientes y eliminar publicaciones denunciadas para mantener el foro en orden.
 
 **Criterios de aceptación**
@@ -166,6 +167,6 @@ Se divide en tareas: **(a)** listar y ver detalle · **(b)** crear · **(c)** ed
 
 **Escenarios:** ✅ listar pendientes · ✅ descartar · ✅ eliminar publicación denunciada · ❌ estudiante accede a reportes · ❌ reporte inexistente.
 
-**Pruebas relacionadas:** `reportes.routes.test.ts`, `features/moderacion.feature`.
+**Pruebas relacionadas:** `tests/integration/moderacion.service.test.ts` (5), `tests/integration/moderacion.routes.test.ts` (13), `features/moderacion.feature` (7 escenarios), `frontend/src/app/pages/admin-reportes/admin-reportes.spec.ts`.
 
 **Dependencias:** HU-05, HU-03.
