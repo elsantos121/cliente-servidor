@@ -28,6 +28,7 @@ model Usuario {
 
   publicaciones Publicacion[]
   comentarios   Comentario[]
+  reportes      Reporte[]
 
   @@map("usuarios")
 }
@@ -59,6 +60,7 @@ model Publicacion {
   actualizadoEn DateTime  @updatedAt @map("actualizado_en")
 
   comentarios Comentario[]
+  reportes    Reporte[]
 
   @@index([categoriaId])
   @@index([creadoEn])
@@ -78,4 +80,29 @@ model Comentario {
 
   @@index([publicacionId])
   @@map("comentarios")
+}
+
+// HU-05 · Denuncia de publicaciones (HU-06b las modera)
+enum EstadoReporte {
+  PENDIENTE
+  RESUELTO
+  DESCARTADO
+}
+
+model Reporte {
+  id            Int           @id @default(autoincrement())
+  motivo        String        @db.VarChar(500)
+  estado        EstadoReporte @default(PENDIENTE)
+  autorId       Int           @map("autor_id")
+  autor         Usuario       @relation(fields: [autorId], references: [id], onDelete: Restrict)
+  /// CASCADE: al borrar la publicación se borran sus denuncias (decisión de la v1).
+  publicacionId Int           @map("publicacion_id")
+  publicacion   Publicacion   @relation(fields: [publicacionId], references: [id], onDelete: Cascade)
+  creadoEn      DateTime      @default(now()) @map("creado_en")
+  actualizadoEn DateTime      @updatedAt @map("actualizado_en")
+
+  /// Un usuario denuncia una misma publicación una sola vez.
+  @@unique([autorId, publicacionId])
+  @@index([estado])
+  @@map("reportes")
 }
