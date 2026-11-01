@@ -1,6 +1,6 @@
 # Estrategia de pruebas
 
-> Fase 1 (Análisis). Este documento describe la estrategia; la evidencia real de ejecución (salidas de RED → GREEN) se agrega en la Fase 3, solo con resultados efectivamente ejecutados.
+> La estrategia se definió en la fase 1. Desde la fase 2, este documento registra la evidencia real de cada ejecución (salidas de RED → GREEN), solo con resultados efectivamente ejecutados.
 
 ## Niveles de prueba
 
@@ -41,14 +41,16 @@ Commits sugeridos: `test(HU-01): registro con correo duplicado (RED)` → `feat(
 - Gestión administrativa de reportes.
 - Manejo de recursos inexistentes.
 
-## Comandos (previstos, PowerShell)
+## Comandos (PowerShell)
 
 ```powershell
 cd backend
-npm test              # unitarias + integración
+npm test              # unitarias + integración (base foro_test)
 npm run test:bdd      # escenarios Cucumber
 npm run typecheck
 npm run lint
+cd ..\frontend
+npx ng test --watch=false
 ```
 
 ## Integración continua (GitHub Actions)
@@ -425,3 +427,14 @@ Antes de subirlo, se simuló cada job en un **clon limpio** del repositorio, **s
 El YAML se validó con `js-yaml` (disparadores `push` y `pull_request` a `develop` y `main`, dos jobs con los pasos esperados).
 
 **Nota de entorno:** el primer intento de clonar para la simulación del frontend falló en Windows con `Filename too long` (la ruta temporal es muy larga); se resolvió clonando con `core.longpaths=true`. No afecta a GitHub Actions, que corre en Ubuntu.
+
+### Primera ejecución en GitHub Actions
+
+En el PR #13 (ejecución `41362741695`, evento `pull_request`), con PostgreSQL efímero en Ubuntu:
+
+| Job | Duración | Resultado real (del log de Actions) |
+|---|---|---|
+| Backend (API + PostgreSQL) | 1 min 35 s | aplicó las 5 migraciones; Vitest **19 archivos / 155 pruebas pasadas**; Cucumber **53 escenarios / 423 pasos pasados**; typecheck, lint y build OK |
+| Frontend (Angular) | 25 s | **11 archivos / 72 pruebas pasadas**; build OK |
+
+Los números coinciden con los de la simulación local, lo que confirma que las pruebas no dependen de la configuración de una máquina. Al mergear el #13 se disparó la ejecución por `push` en `develop`.
