@@ -1,0 +1,44 @@
+<p class="volver"><a routerLink="/">← Volver a las publicaciones</a></p>
+
+@if (cargando()) {
+  <p class="ayuda" role="status">Cargando publicación…</p>
+} @else if (error(); as mensaje) {
+  <div class="aviso aviso--error" role="alert">{{ mensaje }}</div>
+} @else if (publicacion(); as p) {
+  <article class="detalle" aria-labelledby="titulo-publicacion">
+    <h1 id="titulo-publicacion">{{ p.titulo }}</h1>
+    <p class="meta">
+      <span class="etiqueta-categoria">{{ p.categoria.nombre }}</span>
+      {{ p.autor.nombre }} ·
+      <time [attr.datetime]="p.creadoEn">{{ p.creadoEn | date: 'd/M/yyyy HH:mm' }}</time>
+      @if (p.actualizadoEn !== p.creadoEn) {
+        <span> · editada</span>
+      }
+    </p>
+    <div class="contenido">{{ p.contenido }}</div>
+
+    @if (puedeEliminar()) {
+      <div class="acciones">
+        @if (esAutor()) {
+          <a class="boton boton--secundario" [routerLink]="['/publicaciones', p.id, 'editar']">Editar</a>
+        }
+        @if (confirmando()) {
+          <span class="confirmar" role="group" aria-label="Confirmar eliminación">
+            ¿Eliminar la publicación?
+            <button type="button" class="boton boton--peligro" [disabled]="eliminando()" (click)="eliminar()">
+              {{ eliminando() ? 'Eliminando…' : 'Sí, eliminar' }}
+            </button>
+            <button type="button" class="boton boton--secundario" (click)="confirmando.set(false)">Cancelar</button>
+          </span>
+        } @else {
+          <button type="button" class="boton boton--secundario" (click)="confirmando.set(true)">Eliminar</button>
+        }
+      </div>
+    }
+    @if (errorEliminar(); as mensaje) {
+      <div class="aviso aviso--error" role="alert">{{ mensaje }}</div>
+    }
+  </article>
+
+  <app-comentarios [publicacionId]="p.id" />
+}

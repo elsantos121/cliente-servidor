@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
 import { ErrorApi, Usuario } from '../../core/modelos';
 
@@ -28,9 +29,8 @@ const MENSAJES: Record<Campo, Record<string, string>> = {
 /** HU-01: página de registro de estudiantes (/registro). */
 @Component({
   selector: 'app-registro',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './registro.html',
-  styleUrl: './registro.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Registro {

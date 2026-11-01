@@ -1,0 +1,60 @@
+<section class="comentarios" aria-labelledby="titulo-comentarios">
+  <h2 id="titulo-comentarios">
+    Comentarios
+    @if (!cargando() && !errorCarga()) {
+      <span class="cantidad">({{ comentarios().length }})</span>
+    }
+  </h2>
+
+  @if (cargando()) {
+    <p class="ayuda" role="status">Cargando comentarios…</p>
+  } @else if (errorCarga(); as mensaje) {
+    <div class="aviso aviso--error" role="alert">
+      <p>{{ mensaje }}</p>
+      <button type="button" class="boton boton--secundario" (click)="cargar()">Reintentar</button>
+    </div>
+  } @else {
+    @if (comentarios().length === 0) {
+      <p class="ayuda">Todavía no hay comentarios.</p>
+    } @else {
+      <ol class="lista">
+        @for (comentario of comentarios(); track comentario.id) {
+          <li class="comentario">
+            <p class="meta">
+              <strong>{{ comentario.autor.nombre }}</strong> ·
+              <time [attr.datetime]="comentario.creadoEn">{{ comentario.creadoEn | date: 'd/M/yyyy HH:mm' }}</time>
+            </p>
+            <p class="texto">{{ comentario.contenido }}</p>
+          </li>
+        }
+      </ol>
+    }
+  }
+
+  @if (sesion.autenticado()) {
+    <form [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
+      <div class="campo">
+        <label for="nuevo-comentario">Tu comentario</label>
+        <textarea
+          id="nuevo-comentario"
+          formControlName="contenido"
+          rows="3"
+          maxlength="2000"
+          [attr.aria-invalid]="errorValidacion() || errorEnvio() ? true : null"
+          [attr.aria-describedby]="errorValidacion() || errorEnvio() ? 'error-comentario' : null"
+          (input)="errorEnvio.set(null)"
+        ></textarea>
+        @if (errorValidacion() ?? errorEnvio(); as error) {
+          <p id="error-comentario" class="error">{{ error }}</p>
+        }
+      </div>
+      <button type="submit" class="boton" [disabled]="enviando()">
+        {{ enviando() ? 'Enviando…' : 'Comentar' }}
+      </button>
+    </form>
+  } @else {
+    <p class="ayuda">
+      <a routerLink="/login" [queryParams]="{ volver: urlActual }">Iniciá sesión</a> para comentar.
+    </p>
+  }
+</section>

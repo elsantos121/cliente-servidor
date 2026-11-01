@@ -1,0 +1,51 @@
+<section class="panel" aria-labelledby="titulo-categorias">
+  <h1 id="titulo-categorias">Categorías</h1>
+
+  <form class="alta" [formGroup]="formulario" (ngSubmit)="crear()" novalidate>
+    <div class="campo">
+      <label for="nombre-categoria">Nueva categoría</label>
+      <div class="fila">
+        <input
+          id="nombre-categoria"
+          type="text"
+          formControlName="nombre"
+          maxlength="50"
+          [attr.aria-invalid]="errorValidacion() || errorNombre() ? true : null"
+          [attr.aria-describedby]="errorValidacion() || errorNombre() ? 'error-categoria' : 'ayuda-categoria'"
+          (input)="errorNombre.set(null)"
+        />
+        <button type="submit" class="boton" [disabled]="enviando()">
+          {{ enviando() ? 'Creando…' : 'Crear' }}
+        </button>
+      </div>
+      @if (errorValidacion() ?? errorNombre(); as error) {
+        <p id="error-categoria" class="error">{{ error }}</p>
+      } @else {
+        <p id="ayuda-categoria" class="ayuda">Entre 2 y 50 caracteres. No puede repetirse.</p>
+      }
+    </div>
+    @if (creada(); as nombreCreado) {
+      <p class="aviso aviso--exito" role="status">Se creó la categoría «{{ nombreCreado }}».</p>
+    }
+  </form>
+
+  <h2>Existentes</h2>
+  @if (cargando()) {
+    <p class="ayuda" role="status">Cargando categorías…</p>
+  } @else if (errorCarga(); as error) {
+    <div class="aviso aviso--error" role="alert">
+      <p>{{ error }}</p>
+      <button type="button" class="boton boton--secundario" (click)="cargar()">Reintentar</button>
+    </div>
+  } @else {
+    @if (categorias().length === 0) {
+      <p class="ayuda">Todavía no hay categorías. Creá la primera con el formulario.</p>
+    } @else {
+      <ul class="lista">
+        @for (categoria of categorias(); track categoria.id) {
+          <li>{{ categoria.nombre }}</li>
+        }
+      </ul>
+    }
+  }
+</section>
