@@ -1,0 +1,94 @@
+<section class="panel" aria-labelledby="titulo-reportes">
+  <h1 id="titulo-reportes">Reportes</h1>
+
+  <div class="filtros" role="group" aria-label="Estado de los reportes">
+    @for (opcion of estados; track opcion) {
+      <button
+        type="button"
+        class="filtro"
+        [class.filtro--activo]="opcion === estado()"
+        [attr.aria-pressed]="opcion === estado()"
+        (click)="verEstado(opcion)"
+      >
+        {{ etiquetas[opcion] }}
+      </button>
+    }
+  </div>
+
+  @if (aviso(); as mensaje) {
+    <p class="aviso aviso--exito" role="status">{{ mensaje }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="ayuda" role="status">Cargando reportes…</p>
+  } @else if (errorCarga(); as mensaje) {
+    <div class="aviso aviso--error" role="alert">
+      <p>{{ mensaje }}</p>
+      <button type="button" class="boton boton--secundario" (click)="cargar()">Reintentar</button>
+    </div>
+  } @else if (reportes().length === 0) {
+    <p class="ayuda">No hay reportes {{ etiquetas[estado()].toLowerCase() }}.</p>
+  } @else {
+    <ul class="lista">
+      @for (reporte of reportes(); track reporte.id) {
+        <li class="reporte">
+          <a class="titulo" [routerLink]="['/publicaciones', reporte.publicacion.id]">{{ reporte.publicacion.titulo }}</a>
+          <p class="motivo">«{{ reporte.motivo }}»</p>
+          <p class="meta">
+            Denunciado por {{ reporte.autor.nombre }} ·
+            <time [attr.datetime]="reporte.creadoEn">{{ reporte.creadoEn | date: 'd/M/yyyy HH:mm' }}</time>
+          </p>
+
+          @if (reporte.estado === 'PENDIENTE') {
+            <div class="acciones">
+              @if (confirmandoBorrado() === reporte.id) {
+                <span class="confirmar" role="group" aria-label="Confirmar eliminación">
+                  ¿Eliminar la publicación y todos sus reportes?
+                  <button
+                    type="button"
+                    class="boton boton--peligro"
+                    [disabled]="procesando() === reporte.id"
+                    (click)="eliminarPublicacion(reporte)"
+                  >
+                    Sí, eliminar
+                  </button>
+                  <button type="button" class="boton boton--secundario" (click)="confirmandoBorrado.set(null)">
+                    Cancelar
+                  </button>
+                </span>
+              } @else {
+                <button
+                  type="button"
+                  class="boton"
+                  [disabled]="procesando() === reporte.id"
+                  (click)="marcar(reporte, 'RESUELTO')"
+                >
+                  Marcar resuelto
+                </button>
+                <button
+                  type="button"
+                  class="boton boton--secundario"
+                  [disabled]="procesando() === reporte.id"
+                  (click)="marcar(reporte, 'DESCARTADO')"
+                >
+                  Descartar
+                </button>
+                <button
+                  type="button"
+                  class="boton boton--secundario"
+                  [disabled]="procesando() === reporte.id"
+                  (click)="confirmandoBorrado.set(reporte.id)"
+                >
+                  Eliminar publicación
+                </button>
+              }
+            </div>
+          }
+          @if (errores()[reporte.id]; as error) {
+            <p class="error" role="alert">{{ error }}</p>
+          }
+        </li>
+      }
+    </ul>
+  }
+</section>

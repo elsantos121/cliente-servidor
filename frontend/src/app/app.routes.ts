@@ -45,5 +45,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/admin-categorias/admin-categorias').then((m) => m.AdminCategorias),
   },
+  {
+    path: 'admin/reportes',
+    title: 'Reportes · Foro universitario',
+    canActivate: [requiereSesion('ADMIN')],
+    loadComponent: () => import('./pages/admin-reportes/admin-reportes').then((m) => m.AdminReportes),
+  },
   { path: '**', redirectTo: '' },
 ];
