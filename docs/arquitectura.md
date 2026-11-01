@@ -228,6 +228,24 @@ Se montan como sub-recurso: `/api/publicaciones/:publicacionId/comentarios` (rou
 
 Cuerpo del `POST`: `{ "contenido": "…" }` (se recortan espacios). La FK a la publicación es `CASCADE`: al eliminar una publicación se eliminan sus comentarios. Comentar una publicación inexistente se detecta por la clave foránea (`P2003` → `404`).
 
+#### Denuncias (HU-05)
+
+`POST /api/publicaciones/:publicacionId/reportes` · autenticado. Cuerpo: `{ "motivo": "…" }` (5–500 caracteres, se recortan espacios). Un `estado` enviado por el cliente se ignora.
+
+| Código | Cuándo | Cuerpo |
+|---|---|---|
+| `201` | denuncia registrada | `{ "reporte": { "id", "motivo", "estado": "PENDIENTE", "creadoEn", "publicacion": { "id", "titulo" } } }` |
+| `400` | motivo ausente, vacío o fuera de 5–500 | `VALIDACION` con `detalles.motivo` |
+| `401` | sin token | `NO_AUTENTICADO` |
+| `404` | la publicación no existe o el id no es un entero positivo | `NO_ENCONTRADO` |
+| `409` | el usuario ya denunció esa publicación | `{ "error": { "codigo": "CONFLICTO", "mensaje": "Ya denunciaste esta publicación" } }` |
+
+La tabla `reportes` tiene `UNIQUE(autor_id, publicacion_id)` (el `409` sale de esa restricción, `P2002`) y la FK a la publicación es `CASCADE`. El estado (`PENDIENTE`, `RESUELTO`, `DESCARTADO`) lo cambia un administrador en HU-06b. En el frontend la opción de denunciar la ven los usuarios con sesión que no son el autor; el backend no impone esa restricción.
+
+#### Traducción de errores de Prisma
+
+`traducirErrorPrisma(error, { unico?, claveForanea? })` (`src/db/errores.ts`) convierte `P2002` y `P2003` en el `AppError` que indica cada servicio y deja pasar cualquier otro error (que termina en `500`). La usan registro, categorías, publicaciones, comentarios y denuncias.
+
 #### Costo de bcrypt
 
 `BCRYPT_COSTO` (por defecto `10`, rango 4–14) fija las rondas de bcrypt. `.env.test` usa `4` para que la suite sea rápida; el hash de relleno del login usa el mismo costo que los reales para no alterar los tiempos de respuesta.

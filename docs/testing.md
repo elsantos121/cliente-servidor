@@ -257,3 +257,36 @@ Prueba manual en el navegador (`npm run dev` + `ng serve`, base `foro_dev`), sob
 - "Comentar" con el campo vacío muestra "El comentario no puede estar vacío" sin llamar a la API.
 - Un comentario válido aparece al final con el nombre del autor ("Comentarios (1)") y sigue ahí al recargar.
 - Al eliminar la publicación por API (`204`), `GET .../comentarios` responde `404` y en `foro_dev` quedan **0** comentarios de esa publicación (cascada).
+
+### Fase 3 · Iteración 6 — HU-05 Denuncia de publicaciones (2026-11-01)
+
+Rama `feature/HU-05-denuncias`, creada desde `feature/HU-04-comentarios` porque al empezar `develop` solo tenía HU-01 (los PR #2 a #5 se mergearon contra la rama de la historia anterior y no contra `develop`). Mismo entorno.
+
+| Paso | Comando | Resultado real |
+|---|---|---|
+| Gherkin | `npm run test:bdd` | **falla:** 45 escenarios (5 *undefined*), 8 pasos sin definir |
+| RED servicio | `npx vitest run tests/integration/reportes.service.test.ts` | **falla:** `Cannot find module '../../src/modules/reportes/reportes.service'` |
+| GREEN servicio | ídem | **5 pruebas pasadas** (incluye duplicado y cascada); migración `20261101210246_crear_reportes` aplicada |
+| RED endpoint | `npx vitest run tests/integration/reportes.routes.test.ts` | **8 de 10 fallan** (`expected 404 to be 201/400/401/409`); pasan los 2 casos de "404", que coinciden con el 404 genérico de ruta inexistente |
+| GREEN endpoint | ídem | **10 pruebas pasadas** |
+| Pasos BDD | `npm run test:bdd` | **45 escenarios / 317 pasos pasados** |
+| REFACTOR | suite completa (con la nueva `tests/unit/errores.test.ts`, 4 pruebas) | ver tabla siguiente |
+| Pantalla | `npx ng test --watch=false` | **10 archivos, 62 pruebas pasadas** (denuncia 6; detalle +2 sobre quién ve la opción) |
+
+Verificación completa al cierre de la iteración:
+
+| Comando | Resultado |
+|---|---|
+| backend `npm run typecheck` / `lint` / `build` | sin errores |
+| backend `npm test` | 17 archivos, **136 pruebas pasadas** |
+| backend `npm run test:bdd` | **45 escenarios / 317 pasos pasados** |
+| frontend `npx ng test --watch=false` | 10 archivos, **62 pruebas pasadas** |
+| frontend `npx ng build` | sin errores (chunk diferido `publicacion-detalle` 15,2 kB) |
+
+Prueba manual en el navegador (`npm run dev` + `ng serve`, base `foro_dev`), sobre una publicación de prueba creada por API por otra cuenta:
+- Al iniciar sesión con `?volver=/publicaciones/3` vuelve al detalle, que muestra "Denunciar publicación".
+- Motivo "Malo" → "El motivo debe tener entre 5 y 500 caracteres", sin llamar a la API.
+- Motivo válido → "Gracias. Tu denuncia quedó registrada y la revisará un administrador."
+- Recargar y denunciar de nuevo → "Ya denunciaste esta publicación. Un administrador la va a revisar." (sin mensaje de error).
+- Con la cuenta del autor: se ven "Editar" y "Eliminar" pero no la opción de denunciar.
+- En `foro_dev` queda **una** denuncia `PENDIENTE` de esa publicación, del usuario que denunció. Se dejó a propósito para probar la moderación en HU-06b.

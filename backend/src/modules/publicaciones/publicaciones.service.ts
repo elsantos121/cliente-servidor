@@ -1,7 +1,10 @@
-import { esClaveForaneaInexistente } from '../../db/errores';
+import { traducirErrorPrisma } from '../../db/errores';
 import { prisma } from '../../db/prisma';
 import { AppError } from '../../errors/AppError';
 import type { UsuarioToken } from '../auth/auth.service';
+
+/** La FK de categoría falla (P2003) si la categoría no existe: es un dato inválido, no un 500. */
+const categoriaInexistente = () => ({ claveForanea: AppError.validacion({ categoriaId: 'La categoría no existe' }) });
 
 export interface DatosPublicacion {
   titulo: string;
@@ -42,7 +45,7 @@ export async function crearPublicacion(autorId: number, datos: DatosPublicacion)
   try {
     return await prisma.publicacion.create({ data: { ...datos, autorId }, select: camposPublicos });
   } catch (error) {
-    throw traducirCategoriaInexistente(error);
+    throw traducirErrorPrisma(error, categoriaInexistente());
   }
 }
 
@@ -55,7 +58,7 @@ export async function editarPublicacion(id: number, usuario: UsuarioToken, datos
   try {
     return await prisma.publicacion.update({ where: { id }, data: datos, select: camposPublicos });
   } catch (error) {
-    throw traducirCategoriaInexistente(error);
+    throw traducirErrorPrisma(error, categoriaInexistente());
   }
 }
 
@@ -74,12 +77,4 @@ async function buscarAutor(id: number) {
     throw AppError.noEncontrado('Publicación');
   }
   return publicacion;
-}
-
-/** La FK de categoría falla (P2003) si la categoría no existe: es un dato inválido, no un 500. */
-function traducirCategoriaInexistente(error: unknown): unknown {
-  if (esClaveForaneaInexistente(error)) {
-    return AppError.validacion({ categoriaId: 'La categoría no existe' });
-  }
-  return error;
 }

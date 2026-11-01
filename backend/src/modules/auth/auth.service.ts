@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt, { type SignOptions } from 'jsonwebtoken';
 import type { z } from 'zod';
 import { leerEnv } from '../../config/env';
-import { esViolacionUnica } from '../../db/errores';
+import { traducirErrorPrisma } from '../../db/errores';
 import { prisma } from '../../db/prisma';
 import { AppError } from '../../errors/AppError';
 import type { esquemaLogin, esquemaRegistro } from './auth.schemas';
@@ -35,10 +35,7 @@ export async function registrar(datos: DatosRegistro) {
       select: camposPublicosUsuario,
     });
   } catch (error) {
-    if (esViolacionUnica(error)) {
-      throw AppError.conflicto('El correo ya está registrado');
-    }
-    throw error;
+    throw traducirErrorPrisma(error, { unico: AppError.conflicto('El correo ya está registrado') });
   }
 }
 
