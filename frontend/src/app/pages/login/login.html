@@ -7,6 +7,9 @@
     </div>
     <button type="button" class="boton boton--secundario" (click)="cerrarSesion()">Cerrar sesión</button>
   } @else {
+    @if (sesionExpirada) {
+      <p class="aviso" role="status">Tu sesión expiró o ya no es válida. Iniciá sesión de nuevo para continuar.</p>
+    }
     @if (errorGeneral(); as mensaje) {
       <div class="aviso aviso--error" role="alert">{{ mensaje }}</div>
     }
