@@ -1,0 +1,39 @@
+@switch (estado()) {
+  @case ('cerrado') {
+    <button type="button" class="enlace-denuncia" (click)="abrir()">Denunciar publicación</button>
+  }
+  @case ('abierto') {
+    <form class="denuncia" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate aria-labelledby="titulo-denuncia">
+      <h2 id="titulo-denuncia">Denunciar publicación</h2>
+      <div class="campo">
+        <label for="motivo-denuncia">Motivo</label>
+        <textarea
+          id="motivo-denuncia"
+          formControlName="motivo"
+          rows="3"
+          maxlength="500"
+          [attr.aria-invalid]="errorValidacion() || errorEnvio() ? true : null"
+          [attr.aria-describedby]="errorValidacion() || errorEnvio() ? 'error-denuncia' : 'ayuda-denuncia'"
+          (input)="errorEnvio.set(null)"
+        ></textarea>
+        @if (errorValidacion() ?? errorEnvio(); as error) {
+          <p id="error-denuncia" class="error">{{ error }}</p>
+        } @else {
+          <p id="ayuda-denuncia" class="ayuda">Entre 5 y 500 caracteres. La revisará un administrador.</p>
+        }
+      </div>
+      <div class="botones">
+        <button type="submit" class="boton boton--peligro" [disabled]="enviando()">
+          {{ enviando() ? 'Enviando…' : 'Enviar denuncia' }}
+        </button>
+        <button type="button" class="boton boton--secundario" (click)="estado.set('cerrado')">Cancelar</button>
+      </div>
+    </form>
+  }
+  @case ('enviada') {
+    <p class="aviso aviso--exito" role="status">Gracias. Tu denuncia quedó registrada y la revisará un administrador.</p>
+  }
+  @case ('repetida') {
+    <p class="aviso" role="status">Ya denunciaste esta publicación. Un administrador la va a revisar.</p>
+  }
+}

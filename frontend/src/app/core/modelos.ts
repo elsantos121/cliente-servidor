@@ -44,3 +44,13 @@ export interface Comentario {
   creadoEn: string;
   autor: { id: number; nombre: string };
 }
+
+export type EstadoReporte = 'PENDIENTE' | 'RESUELTO' | 'DESCARTADO';
+
+export interface Reporte {
+  id: number;
+  motivo: string;
+  estado: EstadoReporte;
+  creadoEn: string;
+  publicacion: { id: number; titulo: string };
+}
