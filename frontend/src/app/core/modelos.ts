@@ -15,3 +15,48 @@ export interface ErrorApi {
   mensaje: string;
   detalles?: Record<string, string>;
 }
+
+export interface Categoria {
+  id: number;
+  nombre: string;
+  creadoEn: string;
+}
+
+export interface Publicacion {
+  id: number;
+  titulo: string;
+  contenido: string;
+  creadoEn: string;
+  actualizadoEn: string;
+  autor: { id: number; nombre: string };
+  categoria: { id: number; nombre: string };
+}
+
+export interface DatosPublicacion {
+  titulo: string;
+  contenido: string;
+  categoriaId: number;
+}
+
+export interface Comentario {
+  id: number;
+  contenido: string;
+  creadoEn: string;
+  autor: { id: number; nombre: string };
+}
+
+export type EstadoReporte = 'PENDIENTE' | 'RESUELTO' | 'DESCARTADO';
+
+export interface Reporte {
+  id: number;
+  motivo: string;
+  estado: EstadoReporte;
+  creadoEn: string;
+  publicacion: { id: number; titulo: string };
+}
+
+/** Reporte tal como lo ve un administrador al moderar (HU-06b). */
+export interface ReporteModeracion extends Reporte {
+  actualizadoEn: string;
+  autor: { id: number; nombre: string };
+}

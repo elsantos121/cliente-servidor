@@ -8,6 +8,8 @@ cargarEnvTest();
 /** Estado compartido entre los pasos de un mismo escenario. */
 export class ForoWorld extends World {
   respuesta?: Response;
+  /** Token JWT de la sesión iniciada en el escenario (HU-02). */
+  token?: string;
 
   constructor(opciones: IWorldOptions) {
     super(opciones);

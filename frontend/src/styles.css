@@ -109,3 +109,52 @@ input[aria-invalid="true"] {
   background: var(--color-exito-fondo);
   border-color: currentColor;
 }
+
+.boton--secundario {
+  color: var(--color-primario);
+  background: transparent;
+  border: 1px solid var(--color-primario);
+}
+
+.boton--secundario:hover:not(:disabled) {
+  color: #fff;
+}
+
+/* Tarjeta con formulario (registro, login y futuras pantallas de alta). */
+.tarjeta {
+  display: grid;
+  gap: 1rem;
+  max-width: 28rem;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+}
+
+.tarjeta h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.tarjeta form {
+  display: grid;
+  gap: 1rem;
+}
+
+.campo {
+  display: grid;
+  gap: 0.25rem;
+}
+
+a {
+  color: var(--color-primario);
+}
+
+.boton--peligro {
+  background: var(--color-error);
+}
+
+.boton--peligro:hover:not(:disabled) {
+  background: #8f1c13;
+}

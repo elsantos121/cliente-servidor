@@ -1,0 +1,80 @@
+.panel {
+  display: grid;
+  gap: 1rem;
+  max-width: 48rem;
+  margin: 2rem auto;
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.filtro {
+  padding: 0.4rem 0.9rem;
+  color: var(--color-primario);
+  font: inherit;
+  font-weight: 600;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.filtro--activo {
+  color: #fff;
+  background: var(--color-primario);
+  border-color: var(--color-primario);
+}
+
+.lista {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reporte {
+  display: grid;
+  gap: 0.4rem;
+  padding: 1rem;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+}
+
+.titulo {
+  font-weight: 600;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.titulo:hover {
+  text-decoration: underline;
+}
+
+.motivo {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: 0.9rem;
+}
+
+.acciones,
+.confirmar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}

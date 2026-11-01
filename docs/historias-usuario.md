@@ -10,11 +10,11 @@
 |---|---|---|---|---|---|
 | 1 | HU-01 | Registro de estudiantes | Alta | — | Implementada (pendiente PR a develop) |
 | 2 | HU-02 | Inicio de sesión | Alta | HU-01 | Implementada (pendiente PR a develop) |
-| 3 | HU-06a | Gestión de categorías (admin) | Alta | HU-02 | Pendiente |
-| 4 | HU-03 | Publicaciones (crear, consultar, editar, eliminar) | Alta | HU-02, HU-06a | Pendiente |
-| 5 | HU-04 | Comentarios | Media | HU-03 | Pendiente |
-| 6 | HU-05 | Denuncia de publicaciones | Media | HU-03 | Pendiente |
-| 7 | HU-06b | Moderación de reportes (admin) | Media | HU-05 | Pendiente |
+| 3 | HU-06a | Gestión de categorías (admin) | Alta | HU-02 | Implementada (pendiente PR a develop) |
+| 4 | HU-03 | Publicaciones (crear, consultar, editar, eliminar) | Alta | HU-02, HU-06a | Implementada (pendiente PR a develop) |
+| 5 | HU-04 | Comentarios | Media | HU-03 | Implementada (pendiente PR a develop) |
+| 6 | HU-05 | Denuncia de publicaciones | Media | HU-03 | Implementada (pendiente PR a develop) |
+| 7 | HU-06b | Moderación de reportes (admin) | Media | HU-05 | Implementada (pendiente PR a develop) |
 
 HU-06 original ("gestionar categorías y revisar reportes") se dividió en HU-06a y HU-06b por ser demasiado grande: son dos módulos independientes y la segunda depende de HU-05.
 
@@ -58,6 +58,7 @@ Una historia está terminada cuando:
 ## HU-02 — Inicio de sesión
 
 - **Prioridad:** Alta
+- **Estado:** implementada en `feature/HU-02-login` (API, seed del admin, pantalla `/login`, interceptor y guard); falta integrarla a `develop`.
 - **Descripción:** Como usuario registrado, quiero iniciar sesión para acceder a las funciones autorizadas según mi rol.
 
 **Criterios de aceptación**
@@ -69,7 +70,7 @@ Una historia está terminada cuando:
 - ✅ Login de estudiante; ✅ login del administrador creado por el seed.
 - ❌ Contraseña incorrecta; ❌ correo inexistente; ❌ token alterado.
 
-**Pruebas relacionadas:** `auth.service.test.ts`, `auth.routes.test.ts`, `middlewares/autenticar.test.ts`, `features/login.feature`.
+**Pruebas relacionadas:** `tests/integration/auth.login.service.test.ts` (login, tokens, seed), `tests/integration/login.routes.test.ts` (200/400/401, `/me`), `tests/unit/autenticar.test.ts` (401/403), `features/login.feature` (7 escenarios), `frontend/src/app/pages/login/login.spec.ts`, `frontend/src/app/core/auth.spec.ts`.
 
 **Dependencias:** HU-01.
 
@@ -78,6 +79,7 @@ Una historia está terminada cuando:
 ## HU-06a — Gestión de categorías
 
 - **Prioridad:** Alta (las publicaciones requieren categoría)
+- **Estado:** implementada en `feature/HU-06a-categorias` (API + panel `/admin/categorias`); falta integrarla a `develop`.
 - **Descripción:** Como administrador, quiero crear categorías para mantener organizado el foro.
 
 **Criterios de aceptación**
@@ -87,7 +89,7 @@ Una historia está terminada cuando:
 
 **Escenarios:** ✅ admin crea "Matemática"; ✅ listado; ❌ duplicado; ❌ estudiante intenta crear; ❌ nombre vacío.
 
-**Pruebas relacionadas:** `categorias.service.test.ts`, `categorias.routes.test.ts`, `features/categorias.feature`.
+**Pruebas relacionadas:** `tests/integration/categorias.service.test.ts`, `tests/integration/categorias.routes.test.ts` (200/201/400/401/403/409), `tests/integration/duplicados.concurrentes.test.ts`, `features/categorias.feature` (6 escenarios), `frontend/src/app/pages/admin-categorias/admin-categorias.spec.ts`.
 
 **Dependencias:** HU-02.
 
@@ -96,6 +98,7 @@ Una historia está terminada cuando:
 ## HU-03 — Publicaciones
 
 - **Prioridad:** Alta
+- **Estado:** implementada en `feature/HU-03-publicaciones` (API + pantallas `/`, `/publicaciones/:id`, `/publicaciones/nueva`, `/publicaciones/:id/editar`); falta integrarla a `develop`.
 - **Descripción:** Como estudiante, quiero crear, consultar, editar y eliminar mis publicaciones para compartir información con la comunidad.
 
 Se divide en tareas: **(a)** listar y ver detalle · **(b)** crear · **(c)** editar/eliminar propias.
@@ -107,7 +110,7 @@ Se divide en tareas: **(a)** listar y ver detalle · **(b)** crear · **(c)** ed
 
 **Escenarios:** ✅ crear, listar, ver detalle, editar propia, eliminar propia · ❌ título vacío · ❌ categoría inexistente · ❌ editar ajena · ❌ eliminar ajena · ❌ id inexistente.
 
-**Pruebas relacionadas:** `publicaciones.service.test.ts`, `publicaciones.routes.test.ts`, `features/publicaciones.feature`.
+**Pruebas relacionadas:** `tests/integration/publicaciones.service.test.ts` (14), `tests/integration/publicaciones.routes.test.ts` (25), `features/publicaciones.feature` (13 escenarios), `frontend/src/app/pages/inicio/inicio.spec.ts`, `publicacion-detalle.spec.ts`, `publicacion-form.spec.ts`.
 
 **Dependencias:** HU-02, HU-06a.
 
@@ -116,6 +119,7 @@ Se divide en tareas: **(a)** listar y ver detalle · **(b)** crear · **(c)** ed
 ## HU-04 — Comentarios
 
 - **Prioridad:** Media
+- **Estado:** implementada en `feature/HU-04-comentarios` (API + sección de comentarios en el detalle); falta integrarla a `develop`.
 - **Descripción:** Como estudiante, quiero comentar publicaciones para participar en las conversaciones.
 
 **Criterios de aceptación**
@@ -125,7 +129,7 @@ Se divide en tareas: **(a)** listar y ver detalle · **(b)** crear · **(c)** ed
 
 **Escenarios:** ✅ comentar · ✅ listar · ❌ vacío · ❌ publicación inexistente · ❌ sin sesión.
 
-**Pruebas relacionadas:** `comentarios.service.test.ts`, `comentarios.routes.test.ts`, `features/comentarios.feature`.
+**Pruebas relacionadas:** `tests/integration/comentarios.service.test.ts` (6, incluye cascada), `tests/integration/comentarios.routes.test.ts` (14), `features/comentarios.feature` (6 escenarios), `frontend/src/app/pages/publicacion-detalle/comentarios.spec.ts`.
 
 **Dependencias:** HU-03.
 
@@ -134,6 +138,7 @@ Se divide en tareas: **(a)** listar y ver detalle · **(b)** crear · **(c)** ed
 ## HU-05 — Denuncia de publicaciones
 
 - **Prioridad:** Media
+- **Estado:** implementada en `feature/HU-05-denuncias` (API + botón y formulario en el detalle); falta integrarla a `develop`.
 - **Descripción:** Como estudiante, quiero denunciar una publicación para informar contenido inapropiado.
 
 **Criterios de aceptación**
@@ -143,7 +148,7 @@ Se divide en tareas: **(a)** listar y ver detalle · **(b)** crear · **(c)** ed
 
 **Escenarios:** ✅ denuncia · ❌ duplicada · ❌ publicación inexistente · ❌ motivo vacío.
 
-**Pruebas relacionadas:** `reportes.service.test.ts`, `reportes.routes.test.ts`, `features/reportes.feature`.
+**Pruebas relacionadas:** `tests/integration/reportes.service.test.ts` (5, incluye cascada), `tests/integration/reportes.routes.test.ts` (10), `features/reportes.feature` (5 escenarios), `frontend/src/app/pages/publicacion-detalle/denuncia.spec.ts`.
 
 **Dependencias:** HU-03.
 
@@ -152,6 +157,7 @@ Se divide en tareas: **(a)** listar y ver detalle · **(b)** crear · **(c)** ed
 ## HU-06b — Moderación de reportes
 
 - **Prioridad:** Media
+- **Estado:** implementada en `feature/HU-06b-moderacion` (API + panel `/admin/reportes`); falta integrarla a `develop`.
 - **Descripción:** Como administrador, quiero revisar los reportes pendientes y eliminar publicaciones denunciadas para mantener el foro en orden.
 
 **Criterios de aceptación**
@@ -161,6 +167,6 @@ Se divide en tareas: **(a)** listar y ver detalle · **(b)** crear · **(c)** ed
 
 **Escenarios:** ✅ listar pendientes · ✅ descartar · ✅ eliminar publicación denunciada · ❌ estudiante accede a reportes · ❌ reporte inexistente.
 
-**Pruebas relacionadas:** `reportes.routes.test.ts`, `features/moderacion.feature`.
+**Pruebas relacionadas:** `tests/integration/moderacion.service.test.ts` (5), `tests/integration/moderacion.routes.test.ts` (13), `features/moderacion.feature` (7 escenarios), `frontend/src/app/pages/admin-reportes/admin-reportes.spec.ts`.
 
 **Dependencias:** HU-05, HU-03.

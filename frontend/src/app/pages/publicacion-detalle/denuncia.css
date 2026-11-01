@@ -1,0 +1,45 @@
+:host {
+  display: block;
+}
+
+.enlace-denuncia {
+  padding: 0;
+  color: var(--color-texto-suave);
+  font: inherit;
+  font-size: 0.9rem;
+  text-decoration: underline;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.enlace-denuncia:hover {
+  color: var(--color-error);
+}
+
+.denuncia {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+}
+
+h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.botones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.aviso {
+  margin: 0;
+}

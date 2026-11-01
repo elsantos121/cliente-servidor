@@ -14,7 +14,8 @@
     "test:watch": "vitest",
     "test:bdd": "cucumber-js",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev"
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:seed": "prisma db seed"
   },
   "engines": {
     "node": ">=20.19"
@@ -25,6 +26,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.0",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.3",
     "zod": "^4.0.0"
   },
   "devDependencies": {
@@ -32,6 +34,7 @@
     "@eslint/js": "^9.0.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.0.0",
     "@types/supertest": "^6.0.0",
     "eslint": "^9.0.0",
@@ -41,5 +44,8 @@
     "typescript": "^5.6.0",
     "typescript-eslint": "^8.0.0",
     "vitest": "^4.1.12"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }
