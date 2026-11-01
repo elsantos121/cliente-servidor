@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { ErrorApi, Publicacion } from '../../core/modelos';
 import { PublicacionesService } from '../../core/publicaciones.service';
 import { SesionService } from '../../core/sesion.service';
+import { Comentarios } from './comentarios';
 
 /**
  * HU-03: detalle de una publicación (/publicaciones/:id). El autor ve "Editar" y "Eliminar";
@@ -12,7 +13,7 @@ import { SesionService } from '../../core/sesion.service';
  */
 @Component({
   selector: 'app-publicacion-detalle',
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, DatePipe, Comentarios],
   templateUrl: './publicacion-detalle.html',
   styleUrl: './publicacion-detalle.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

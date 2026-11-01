@@ -12,7 +12,7 @@
 | 2 | HU-02 | Inicio de sesión | Alta | HU-01 | Implementada (pendiente PR a develop) |
 | 3 | HU-06a | Gestión de categorías (admin) | Alta | HU-02 | Implementada (pendiente PR a develop) |
 | 4 | HU-03 | Publicaciones (crear, consultar, editar, eliminar) | Alta | HU-02, HU-06a | Implementada (pendiente PR a develop) |
-| 5 | HU-04 | Comentarios | Media | HU-03 | Pendiente |
+| 5 | HU-04 | Comentarios | Media | HU-03 | Implementada (pendiente PR a develop) |
 | 6 | HU-05 | Denuncia de publicaciones | Media | HU-03 | Pendiente |
 | 7 | HU-06b | Moderación de reportes (admin) | Media | HU-05 | Pendiente |
 
@@ -119,6 +119,7 @@ Se divide en tareas: **(a)** listar y ver detalle · **(b)** crear · **(c)** ed
 ## HU-04 — Comentarios
 
 - **Prioridad:** Media
+- **Estado:** implementada en `feature/HU-04-comentarios` (API + sección de comentarios en el detalle); falta integrarla a `develop`.
 - **Descripción:** Como estudiante, quiero comentar publicaciones para participar en las conversaciones.
 
 **Criterios de aceptación**
@@ -128,7 +129,7 @@ Se divide en tareas: **(a)** listar y ver detalle · **(b)** crear · **(c)** ed
 
 **Escenarios:** ✅ comentar · ✅ listar · ❌ vacío · ❌ publicación inexistente · ❌ sin sesión.
 
-**Pruebas relacionadas:** `comentarios.service.test.ts`, `comentarios.routes.test.ts`, `features/comentarios.feature`.
+**Pruebas relacionadas:** `tests/integration/comentarios.service.test.ts` (6, incluye cascada), `tests/integration/comentarios.routes.test.ts` (14), `features/comentarios.feature` (6 escenarios), `frontend/src/app/pages/publicacion-detalle/comentarios.spec.ts`.
 
 **Dependencias:** HU-03.
 

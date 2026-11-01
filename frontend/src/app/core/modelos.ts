@@ -37,3 +37,10 @@ export interface DatosPublicacion {
   contenido: string;
   categoriaId: number;
 }
+
+export interface Comentario {
+  id: number;
+  contenido: string;
+  creadoEn: string;
+  autor: { id: number; nombre: string };
+}
