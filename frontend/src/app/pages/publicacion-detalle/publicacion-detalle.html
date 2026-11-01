@@ -38,6 +38,9 @@
     @if (errorEliminar(); as mensaje) {
       <div class="aviso aviso--error" role="alert">{{ mensaje }}</div>
     }
+    @if (puedeDenunciar()) {
+      <app-denuncia [publicacionId]="p.id" />
+    }
   </article>
 
   <app-comentarios [publicacionId]="p.id" />
