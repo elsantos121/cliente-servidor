@@ -118,3 +118,39 @@ Prueba manual contra la API en ejecución (`npm run dev`, base `foro_dev`): regi
 **Pendiente:** recorrer la pantalla `/registro` en el navegador con `npm start` (no se pudo levantar `ng serve` desde la sesión de Claude por falta de memoria del entorno).
 
 **Dependencia agregada:** `bcryptjs` 3.0.3 (trae sus propios tipos). `npm audit` sigue mostrando solo los 3 avisos conocidos de `deepmerge-ts`.
+
+### Fase 3 · Iteración 2 — HU-02 Inicio de sesión (2026-10-28)
+
+Rama `feature/HU-02-login` (creada desde `feature/HU-01-registro`, que todavía no estaba integrada). Mismo entorno que la iteración 1.
+
+| Paso | Comando | Resultado real |
+|---|---|---|
+| Gherkin | `npm run test:bdd` | **falla:** 15 escenarios (7 *undefined*), 13 pasos sin definir |
+| RED servicio | `npx vitest run tests/integration/auth.login.service.test.ts` | **9 de 9 fallan:** `iniciarSesion is not a function` |
+| GREEN servicio | ídem + `auth.service.test.ts` | **13 pruebas pasadas** (9 de login/tokens/seed, 4 de registro) |
+| RED middlewares | `npx vitest run tests/unit/autenticar.test.ts` | **falla:** `Cannot find module '../../src/middlewares/autenticar'` |
+| GREEN middlewares | ídem | **8 pruebas pasadas** (401 sin token, esquema, firma, expirado; 403 por rol) |
+| RED endpoints | `npx vitest run tests/integration/login.routes.test.ts` | **8 de 8 fallan:** `expected 404 to be 200/401/400` |
+| GREEN endpoints | ídem | **8 pruebas pasadas** |
+| Pasos BDD | `npm run test:bdd` | **15 escenarios / 69 pasos pasados** |
+| Seed | `npm run prisma:seed` (dos veces, base `foro_dev`) | sin variables: error claro; con variables: `Administrador listo: admin@uni.edu (id 2)` las dos veces (idempotente) |
+| REFACTOR | suite completa | ver tabla siguiente |
+| Pantalla | `npx ng test --watch=false` | 4 archivos, **25 pruebas pasadas** |
+
+Verificación completa al cierre de la iteración:
+
+| Comando | Resultado |
+|---|---|
+| backend `npm run typecheck` / `lint` / `build` | sin errores |
+| backend `npm test` | 7 archivos, **41 pruebas pasadas** |
+| backend `npm run test:bdd` | **15 escenarios / 69 pasos pasados** |
+| frontend `npx ng test --watch=false` | 4 archivos, **25 pruebas pasadas** |
+| frontend `npx ng build` | sin errores (chunks diferidos: login 3,8 kB, registro 5,3 kB) |
+
+Prueba manual en el navegador (`npm run dev` + `ng serve`, base `foro_dev`): registro de un estudiante nuevo → enlace a iniciar sesión → contraseña incorrecta muestra "Correo o contraseña incorrectos" → login correcto muestra el nombre en la cabecera → al recargar la sesión sigue y el token guardado obtiene `200` en `GET /api/usuarios/me` → "Cerrar sesión" borra la sesión guardada.
+
+**Configuración:** `JWT_SECRET` ahora se valida al arrancar (mínimo 16 caracteres, como ya decía `.env.example`). El `.env.test` local tenía uno más corto y las pruebas fallaron con `Configuración inválida: JWT_SECRET: debe tener al menos 16 caracteres` hasta reemplazarlo. El seed necesita `ADMIN_EMAIL` y `ADMIN_PASSWORD` en `.env`.
+
+**Corrección de documentación:** en la iteración 1 la tabla de `docs/historias-usuario.md` marcó por error HU-02 como implementada (la fila menciona HU-01 como dependencia). Con esta iteración la marca pasa a ser correcta.
+
+**Entorno:** durante la iteración la máquina se quedó sin memoria virtual y el motor de Prisma no arrancaba (`0xC0000142`); se resolvió cerrando programas.

@@ -21,3 +21,9 @@ export const esquemaRegistro = z.object({
     .min(8, 'La contraseña debe tener al menos 8 caracteres')
     .max(72, 'La contraseña no puede superar 72 caracteres'),
 });
+
+/** Credenciales de inicio de sesión: solo se exige que estén; el servicio decide si son correctas. */
+export const esquemaLogin = z.object({
+  email: z.string({ error: 'El correo es obligatorio' }).trim().min(1, 'El correo es obligatorio'),
+  password: z.string({ error: 'La contraseña es obligatoria' }).min(1, 'La contraseña es obligatoria'),
+});
