@@ -16,6 +16,7 @@ const publicacion = (id: number, titulo: string, categoria = { id: 1, nombre: 'M
   actualizadoEn: '2026-11-01T12:00:00Z',
   autor: { id: 1, nombre: 'Ana' },
   categoria,
+  votos: { positivos: 0, negativos: 0, miVoto: null },
 });
 
 describe('Inicio (HU-03)', () => {

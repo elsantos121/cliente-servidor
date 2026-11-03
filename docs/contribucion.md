@@ -101,8 +101,6 @@ Al integrar: estado de la historia en [historias-usuario.md](historias-usuario.m
 
 Al cierre de cada entrega, `develop` se integra a `main` por pull request con el CI en verde.
 
-## Features futuras ya anotadas
+## Historias acordadas para las próximas contribuciones
 
-- Votos en publicaciones o comentarios.
-- Historial de moderación (borrado lógico de publicaciones en lugar de borrado en cascada).
-- Mejoras de moderación (por ejemplo, ocultar una publicación mientras se revisa).
+Las ideas de votos, ocultamiento durante revisión e historial de moderación se formalizaron como HU-07, HU-08 y HU-09 en [historias-usuario.md](historias-usuario.md), con criterios de aceptación y dependencias explícitas.

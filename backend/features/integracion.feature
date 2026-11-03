@@ -30,6 +30,9 @@ Característica: Flujo completo del foro
 
     # HU-04 y HU-05 · Beto comenta y denuncia
     Dado que inicié sesión con correo "beto@uni.edu" y contraseña "secreta123"
+    Cuando voto "POSITIVO" en la publicación "Oferta de apuntes"
+    Entonces la respuesta tiene código 200
+    Y el voto de "beto@uni.edu" en "Oferta de apuntes" es "POSITIVO"
     Cuando comento "¿No es contra las reglas vender apuntes?" en la publicación "Oferta de apuntes"
     Entonces la respuesta tiene código 201
     Cuando denuncio la publicación "Oferta de apuntes" con el motivo "Venta de material, prohibida por las reglas"

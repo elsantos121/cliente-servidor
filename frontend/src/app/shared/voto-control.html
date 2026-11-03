@@ -1,0 +1,26 @@
+<div class="votos" role="group" aria-label="Votos">
+  <button
+    type="button"
+    aria-label="Voto positivo"
+    [attr.aria-pressed]="votos().miVoto === 'POSITIVO'"
+    [disabled]="!sesion.autenticado() || procesando()"
+    (click)="cambiar('POSITIVO')"
+  >
+    ▲ {{ votos().positivos }}
+  </button>
+  <button
+    type="button"
+    aria-label="Voto negativo"
+    [attr.aria-pressed]="votos().miVoto === 'NEGATIVO'"
+    [disabled]="!sesion.autenticado() || procesando()"
+    (click)="cambiar('NEGATIVO')"
+  >
+    ▼ {{ votos().negativos }}
+  </button>
+  @if (!sesion.autenticado()) {
+    <a routerLink="/login">Iniciá sesión para votar</a>
+  }
+  @if (error(); as mensaje) {
+    <span class="error" role="alert">{{ mensaje }}</span>
+  }
+</div>

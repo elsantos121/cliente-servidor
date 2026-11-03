@@ -24,6 +24,7 @@ const publicacion: Publicacion = {
   actualizadoEn: '2026-11-01T12:00:00Z',
   autor: { id: ana.id, nombre: 'Ana' },
   categoria: { id: 1, nombre: 'Matemática' },
+  votos: { positivos: 0, negativos: 0, miVoto: null },
 };
 
 describe('PublicacionDetalle (HU-03)', () => {

@@ -8,6 +8,7 @@ import { AvisosService } from '../../core/avisos.service';
 import { SesionService } from '../../core/sesion.service';
 import { Comentarios } from './comentarios';
 import { Denuncia } from './denuncia';
+import { VotoControl } from '../../shared/voto-control';
 
 /**
  * HU-03: detalle de una publicación (/publicaciones/:id). El autor ve "Editar" y "Eliminar";
@@ -15,7 +16,7 @@ import { Denuncia } from './denuncia';
  */
 @Component({
   selector: 'app-publicacion-detalle',
-  imports: [RouterLink, DatePipe, Comentarios, Denuncia],
+  imports: [RouterLink, DatePipe, Comentarios, Denuncia, VotoControl],
   templateUrl: './publicacion-detalle.html',
   styleUrl: './publicacion-detalle.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

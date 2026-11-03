@@ -456,3 +456,24 @@ Prueba manual en el navegador (`npm run dev` + `ng serve`, base `foro_dev`):
 - En una publicación de otra cuenta aparece "Reportar publicación" (antes "Denunciar").
 - `/ayuda` muestra las cinco secciones; `GET /api/publicaciones/9999` responde "Publicación inexistente".
 - "Cerrar sesión" → "Cerraste sesión." en la pantalla de login.
+
+## HU-07 — Votos en publicaciones y comentarios (2026-11-03)
+
+La historia se trabajó en `feature/HU-07-votos`. Se usó un clúster PostgreSQL 17 temporal y aislado con la base `foro_test`; no se usó la base de desarrollo.
+
+| Paso | Comando | Resultado real |
+|---|---|---|
+| RED BDD | `npm run test:bdd` | las 4 escenas nuevas fallaron con `404` al no existir todavía las rutas; las 53 escenas existentes pasaron |
+| RED servicio | `npx vitest run tests/integration/votos.service.test.ts` | falla esperada: módulo `votos.service` inexistente |
+| GREEN servicio | `npx vitest run tests/integration/votos.service.test.ts` | **6 pruebas pasadas**; migración aditiva aplicada |
+| RED endpoint | `npx vitest run tests/integration/votos.routes.test.ts` | **6 pruebas fallaron** al no estar registrados los endpoints |
+| GREEN endpoint | misma prueba focalizada | **6 pruebas pasadas** |
+| RED Angular | `npx ng test --watch=false --include=src/app/shared/voto-control.spec.ts` | falla esperada al no existir el componente ni el tipo `ResumenVotos` |
+| GREEN Angular | misma prueba focalizada | **4 pruebas pasadas** |
+| Regresión frontend | `npx ng test --watch=false` | **14 archivos / 84 pruebas pasadas** |
+| Regresión backend | `npm test` | **22 archivos / 173 pruebas pasadas** |
+| BDD final | `npm run test:bdd` | **57 escenarios / 464 pasos pasados** |
+| Backend | `npm run typecheck` · `npm run lint` · `npm run build` | sin errores |
+| Frontend | `npm run build` | sin errores |
+
+El ciclo quedó separado en commits RED y GREEN; el refactor final y los cambios de documentación registran el resultado sin alterar la suite existente.

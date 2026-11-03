@@ -30,7 +30,8 @@ cliente-servidor/
 │   │   │   ├── categorias/
 │   │   │   ├── publicaciones/
 │   │   │   ├── comentarios/
-│   │   │   └── reportes/
+│   │   │   ├── reportes/
+│   │   │   └── votos/
 │   │   ├── app.ts         crea la app y registra los módulos (único punto de registro)
 │   │   ├── server.ts      arranca el servidor HTTP
 │   │   └── db/            cliente de Prisma + traducción de errores (errores.ts)
@@ -94,8 +95,12 @@ Usuario 1──* Reporte *──1 Publicacion
 | `publicaciones` | id, titulo, contenido, autor_id, categoria_id, creado_en, actualizado_en | FK autor → usuarios · FK categoría → categorias (`RESTRICT`) |
 | `comentarios` | id, contenido, autor_id, publicacion_id, creado_en | FK autor · FK publicación (`CASCADE`) |
 | `reportes` | id, motivo, estado, autor_id, publicacion_id, creado_en, actualizado_en | estado ∈ {PENDIENTE, RESUELTO, DESCARTADO} · `UNIQUE(autor_id, publicacion_id)` · FK publicación (`CASCADE`) |
+| `votos_publicaciones` | id, valor, usuario_id, publicacion_id, creado_en | valor ∈ {POSITIVO, NEGATIVO} · `UNIQUE(usuario_id, publicacion_id)` · FK publicación (`CASCADE`) |
+| `votos_comentarios` | id, valor, usuario_id, comentario_id, creado_en | valor ∈ {POSITIVO, NEGATIVO} · `UNIQUE(usuario_id, comentario_id)` · FK comentario (`CASCADE`) |
 
-**Decisión a revisar:** al eliminar una publicación se eliminan en cascada sus comentarios y reportes. Es lo más simple para la v1; conservar el historial de moderación (borrado lógico) queda como posible feature futura.
+Un usuario solo tiene un voto por elemento. Los votos de una publicación/comentario se eliminan en cascada junto con su contenido.
+
+**Decisión a revisar:** al eliminar una publicación se eliminan en cascada sus comentarios y reportes. Conservar el historial de moderación (borrado lógico) está definido en HU-09.
 
 ## 5. API REST
 
@@ -122,6 +127,8 @@ Prefijo `/api`. Formato de error uniforme:
 | POST | `/api/publicaciones/:id/reportes` | autenticado | HU-05 |
 | GET | `/api/reportes?estado=PENDIENTE` | ADMIN | HU-06b |
 | PATCH | `/api/reportes/:id` | ADMIN | HU-06b |
+| PUT / DELETE | `/api/votos/publicaciones/:id` | autenticado | HU-07 |
+| PUT / DELETE | `/api/votos/comentarios/:id` | autenticado | HU-07 |
 
 Códigos usados: `200`, `201`, `204`, `400` validación, `401` no autenticado, `403` sin permiso, `404` inexistente, `409` conflicto (duplicado), `500` error inesperado (sin detalles internos).
 
@@ -174,6 +181,7 @@ Devuelve `{ "usuario": { "id", "nombre", "email", "rol", "creadoEn" } }` con `20
 | Middleware | Uso | Error |
 |---|---|---|
 | `autenticar` | exige un `Bearer` válido y deja `req.usuario = { id, rol }` | `401 NO_AUTENTICADO` |
+| `autenticarOpcional` | en recursos públicos, acepta ausencia de token y valida el usuario si se envía | `401 NO_AUTENTICADO` si el token enviado no es válido |
 | `autorizar(...roles)` | después de `autenticar`; exige uno de los roles | `403 PROHIBIDO` (`401` si no hay sesión) |
 
 Ejemplo para HU-06a: `router.post('/', autenticar, autorizar('ADMIN'), validar(esquema), controlador)`.
@@ -202,8 +210,11 @@ Una publicación se devuelve siempre con esta forma:
 
 ```json
 { "id": 5, "titulo": "…", "contenido": "…", "creadoEn": "…", "actualizadoEn": "…",
-  "autor": { "id": 1, "nombre": "Ana" }, "categoria": { "id": 2, "nombre": "Programación" } }
+  "autor": { "id": 1, "nombre": "Ana" }, "categoria": { "id": 2, "nombre": "Programación" },
+  "votos": { "positivos": 3, "negativos": 1, "miVoto": "POSITIVO" } }
 ```
+
+`votos.miVoto` es `null` para visitantes o usuarios que todavía no votaron.
 
 Cuerpo de `POST` y `PUT` (el `PUT` reemplaza los tres campos; un `autorId` enviado se ignora):
 
@@ -215,8 +226,8 @@ Cuerpo de `POST` y `PUT` (el `PUT` reemplaza los tres campos; un `autorId` envia
 
 | Método y ruta | Acceso | Éxito | Errores |
 |---|---|---|---|
-| `GET /api/publicaciones?categoriaId=` | público | `200` `{ "publicaciones": [...] }`, más recientes primero | `400` si `categoriaId` no es un entero positivo |
-| `GET /api/publicaciones/:id` | público | `200` `{ "publicacion": {...} }` | `404` si no existe o el id no es un entero positivo |
+| `GET /api/publicaciones?categoriaId=` | público (token opcional) | `200` `{ "publicaciones": [...] }`, más recientes primero | `400` si `categoriaId` no es un entero positivo · `401` si se envió un token inválido |
+| `GET /api/publicaciones/:id` | público (token opcional) | `200` `{ "publicacion": {...} }` | `404` si no existe o el id no es un entero positivo · `401` si se envió un token inválido |
 | `POST /api/publicaciones` | autenticado | `201` `{ "publicacion": {...} }` | `400` datos inválidos o `categoriaId` inexistente (`detalles.categoriaId: "La categoría no existe"`) · `401` |
 | `PUT /api/publicaciones/:id` | solo el autor | `200` `{ "publicacion": {...} }` | `400` · `401` · `403` (incluso para un ADMIN) · `404` |
 | `DELETE /api/publicaciones/:id` | autor o ADMIN | `204` sin cuerpo | `401` · `403` · `404` |
@@ -225,14 +236,29 @@ La categoría inexistente se detecta por la clave foránea (`P2003` → `400`), 
 
 #### Comentarios (HU-04)
 
-Se montan como sub-recurso: `/api/publicaciones/:publicacionId/comentarios` (router con `mergeParams`). Un comentario se devuelve como `{ "id", "contenido", "creadoEn", "autor": { "id", "nombre" } }`.
+Se montan como sub-recurso: `/api/publicaciones/:publicacionId/comentarios` (router con `mergeParams`). Un comentario incluye `votos: { "positivos", "negativos", "miVoto" }` además de `{ "id", "contenido", "creadoEn", "autor": { "id", "nombre" } }`.
 
 | Método y ruta | Acceso | Éxito | Errores |
 |---|---|---|---|
-| `GET /api/publicaciones/:id/comentarios` | público | `200` `{ "comentarios": [...] }`, más antiguos primero | `404` si la publicación no existe o el id no es un entero positivo |
+| `GET /api/publicaciones/:id/comentarios` | público (token opcional) | `200` `{ "comentarios": [...] }`, más antiguos primero | `404` si la publicación no existe o el id no es un entero positivo · `401` si se envió un token inválido |
 | `POST /api/publicaciones/:id/comentarios` | autenticado | `201` `{ "comentario": {...} }` | `400` contenido vacío (también solo espacios) o de más de 2000 caracteres · `401` · `404` publicación inexistente |
 
 Cuerpo del `POST`: `{ "contenido": "…" }` (se recortan espacios). La FK a la publicación es `CASCADE`: al eliminar una publicación se eliminan sus comentarios. Comentar una publicación inexistente se detecta por la clave foránea (`P2003` → `404`).
+
+#### Votos (HU-07)
+
+`PUT /api/votos/publicaciones/:id` y `PUT /api/votos/comentarios/:id` registran o cambian el voto autenticado. Cuerpo: `{ "valor": "POSITIVO" | "NEGATIVO" }`. Cada usuario puede votar una sola vez por elemento; repetir el mismo voto actualiza el existente, no crea duplicados. El autor del contenido no puede votarlo.
+
+`DELETE` sobre esas mismas rutas retira el voto del usuario autenticado; si todavía no había votado, la operación es idempotente. Tanto `PUT` como `DELETE` responden `200` con `{ "votos": { "positivos", "negativos", "miVoto" } }`.
+
+| Código | Cuándo |
+|---|---|
+| `400` | valor ausente o distinto de `POSITIVO` / `NEGATIVO` |
+| `401` | sin token o token inválido |
+| `403` | el usuario intenta votar su propio contenido |
+| `404` | publicación o comentario inexistente |
+
+Los `GET` públicos de publicaciones y comentarios admiten un token opcional: sin token devuelven los conteos y `miVoto: null`; con un token válido también informan el voto propio. Un token inválido responde `401`.
 
 #### Denuncias (HU-05)
 

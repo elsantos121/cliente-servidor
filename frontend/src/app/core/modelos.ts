@@ -22,6 +22,14 @@ export interface Categoria {
   creadoEn: string;
 }
 
+export type ValorVoto = 'POSITIVO' | 'NEGATIVO';
+
+export interface ResumenVotos {
+  positivos: number;
+  negativos: number;
+  miVoto: ValorVoto | null;
+}
+
 export interface Publicacion {
   id: number;
   titulo: string;
@@ -30,6 +38,7 @@ export interface Publicacion {
   actualizadoEn: string;
   autor: { id: number; nombre: string };
   categoria: { id: number; nombre: string };
+  votos: ResumenVotos;
 }
 
 export interface DatosPublicacion {
@@ -43,6 +52,7 @@ export interface Comentario {
   contenido: string;
   creadoEn: string;
   autor: { id: number; nombre: string };
+  votos: ResumenVotos;
 }
 
 export type EstadoReporte = 'PENDIENTE' | 'RESUELTO' | 'DESCARTADO';

@@ -29,6 +29,7 @@ describe('comentarios.service (HU-04)', () => {
       contenido: 'Probá con L’Hôpital',
       creadoEn: expect.any(Date),
       autor: { id: betoId, nombre: 'Beto' },
+      votos: { positivos: 0, negativos: 0, miVoto: null },
     });
     expect(await prisma.comentario.count({ where: { publicacionId, autorId: betoId } })).toBe(1);
   });

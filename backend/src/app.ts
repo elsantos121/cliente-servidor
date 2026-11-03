@@ -8,6 +8,7 @@ import { comentariosRouter } from './modules/comentarios';
 import { publicacionesRouter } from './modules/publicaciones';
 import { denunciasRouter, moderacionRouter } from './modules/reportes';
 import { usuariosRouter } from './modules/usuarios';
+import { votosRouter } from './modules/votos';
 
 /**
  * PUNTO ÚNICO DE REGISTRO DE MÓDULOS.
@@ -22,6 +23,7 @@ const modulos: Array<{ ruta: string; router: Router }> = [
   { ruta: '/api/publicaciones/:publicacionId/comentarios', router: comentariosRouter }, // HU-04
   { ruta: '/api/publicaciones/:publicacionId/reportes', router: denunciasRouter }, // HU-05
   { ruta: '/api/reportes', router: moderacionRouter }, // HU-06b
+  { ruta: '/api/votos', router: votosRouter }, // HU-07
 ];
 
 export function crearApp() {

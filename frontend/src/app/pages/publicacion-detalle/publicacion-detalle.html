@@ -16,6 +16,7 @@
       }
     </p>
     <div class="contenido">{{ p.contenido }}</div>
+    <app-voto-control [tipo]="'publicacion'" [recursoId]="p.id" [resumen]="p.votos" />
 
     @if (puedeEliminar()) {
       <div class="acciones">

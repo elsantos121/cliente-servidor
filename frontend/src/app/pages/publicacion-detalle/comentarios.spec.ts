@@ -12,6 +12,7 @@ const comentario = (id: number, contenido: string, nombre = 'Beto'): Comentario 
   contenido,
   creadoEn: '2026-11-01T12:00:00Z',
   autor: { id, nombre },
+  votos: { positivos: 0, negativos: 0, miVoto: null },
 });
 
 describe('Comentarios (HU-04)', () => {

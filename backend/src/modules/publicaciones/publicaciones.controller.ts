@@ -7,12 +7,12 @@ const RECURSO = 'Publicación';
 
 export const listar: RequestHandler = async (req, res) => {
   const filtro = parsear(esquemaFiltro, req.query);
-  const publicaciones = await publicacionesService.listarPublicaciones(filtro);
+  const publicaciones = await publicacionesService.listarPublicaciones(filtro, req.usuario?.id);
   res.json({ publicaciones });
 };
 
 export const detalle: RequestHandler = async (req, res) => {
-  const publicacion = await publicacionesService.obtenerPublicacion(idDeRuta(req.params.id, RECURSO));
+  const publicacion = await publicacionesService.obtenerPublicacion(idDeRuta(req.params.id, RECURSO), req.usuario?.id);
   res.json({ publicacion });
 };
 

@@ -6,11 +6,12 @@ import { Router, RouterLink } from '@angular/router';
 import { ComentariosService } from '../../core/comentarios.service';
 import { Comentario, ErrorApi } from '../../core/modelos';
 import { SesionService } from '../../core/sesion.service';
+import { VotoControl } from '../../shared/voto-control';
 
 /** HU-04: sección de comentarios del detalle de una publicación. */
 @Component({
   selector: 'app-comentarios',
-  imports: [ReactiveFormsModule, RouterLink, DatePipe],
+  imports: [ReactiveFormsModule, RouterLink, DatePipe, VotoControl],
   templateUrl: './comentarios.html',
   styleUrl: './comentarios.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

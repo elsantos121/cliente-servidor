@@ -37,6 +37,7 @@
             {{ publicacion.autor.nombre }} ·
             <time [attr.datetime]="publicacion.creadoEn">{{ publicacion.creadoEn | date: 'd/M/yyyy HH:mm' }}</time>
           </p>
+          <app-voto-control [tipo]="'publicacion'" [recursoId]="publicacion.id" [resumen]="publicacion.votos" />
         </li>
       }
     </ul>

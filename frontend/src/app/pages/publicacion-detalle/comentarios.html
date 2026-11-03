@@ -25,6 +25,7 @@
               <time [attr.datetime]="comentario.creadoEn">{{ comentario.creadoEn | date: 'd/M/yyyy HH:mm' }}</time>
             </p>
             <p class="texto">{{ comentario.contenido }}</p>
+            <app-voto-control [tipo]="'comentario'" [recursoId]="comentario.id" [resumen]="comentario.votos" />
           </li>
         }
       </ol>

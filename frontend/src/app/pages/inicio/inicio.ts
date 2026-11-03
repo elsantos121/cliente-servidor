@@ -5,11 +5,12 @@ import { CategoriasService } from '../../core/categorias.service';
 import { Categoria, Publicacion } from '../../core/modelos';
 import { PublicacionesService } from '../../core/publicaciones.service';
 import { SesionService } from '../../core/sesion.service';
+import { VotoControl } from '../../shared/voto-control';
 
 /** HU-03: inicio (/) con el listado de publicaciones y filtro por categoría. */
 @Component({
   selector: 'app-inicio',
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, DatePipe, VotoControl],
   templateUrl: './inicio.html',
   styleUrl: './inicio.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

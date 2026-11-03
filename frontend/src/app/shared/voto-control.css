@@ -1,0 +1,31 @@
+.votos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  color: var(--color-texto-suave);
+  font-size: 0.9rem;
+}
+
+.votos button {
+  padding: 0.2rem 0.45rem;
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--color-borde);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.votos button[aria-pressed='true'] {
+  color: var(--color-primario-oscuro);
+  border-color: currentColor;
+}
+
+.votos button:disabled {
+  cursor: not-allowed;
+}
+
+.votos a {
+  color: inherit;
+}

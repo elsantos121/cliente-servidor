@@ -23,6 +23,7 @@ const existente: Publicacion = {
   actualizadoEn: '',
   autor: { id: ana.id, nombre: 'Ana' },
   categoria: { id: 2, nombre: 'Programación' },
+  votos: { positivos: 0, negativos: 0, miVoto: null },
 };
 
 describe('PublicacionForm (HU-03)', () => {

@@ -1,6 +1,6 @@
 # Historias de usuario — Foro universitario
 
-> Escritas en la fase 1 (análisis); las siete quedaron terminadas en la fase 3. Formato: *Como [rol], quiero [acción], para [beneficio].*
+> Las historias se acuerdan antes de implementarse. Formato: *Como [rol], quiero [acción], para [beneficio].*
 > Prioridad: **Alta** = necesaria para que el foro funcione · **Media** = completa la v1.
 > Las pruebas de cada historia se escribieron con TDD/BDD; la evidencia de cada ciclo está en [testing.md](testing.md).
 
@@ -15,8 +15,11 @@
 | 5 | HU-04 | Comentarios | Media | HU-03 | Terminada | #5 → #7 |
 | 6 | HU-05 | Denuncia de publicaciones | Media | HU-03 | Terminada | #8 |
 | 7 | HU-06b | Moderación de reportes (admin) | Media | HU-05 | Terminada | #9 |
+| 8 | HU-07 | Votos en publicaciones y comentarios | Media | HU-02, HU-03, HU-04 | En desarrollo | — |
+| 9 | HU-08 | Ocultar publicaciones durante revisión | Media | HU-05, HU-06b | Acordada | — |
+| 10 | HU-09 | Historial de moderación y borrado lógico | Media | HU-08, HU-06b | Acordada | — |
 
-HU-02 a HU-04 se mergearon primero en ramas apiladas (#2 a #5) y llegaron juntas a `develop` en #7. Además, `features/integracion.feature` recorre las siete historias de punta a punta (fase 4).
+HU-02 a HU-04 se mergearon primero en ramas apiladas (#2 a #5) y llegaron juntas a `develop` en #7. `features/integracion.feature` recorre el flujo de las historias ya integradas.
 
 HU-06 original ("gestionar categorías y revisar reportes") se dividió en HU-06a y HU-06b por ser demasiado grande: son dos módulos independientes y la segunda depende de HU-05.
 
@@ -172,3 +175,56 @@ Se divide en tareas: **(a)** listar y ver detalle · **(b)** crear · **(c)** ed
 **Pruebas relacionadas:** `tests/integration/moderacion.service.test.ts` (5), `tests/integration/moderacion.routes.test.ts` (13), `features/moderacion.feature` (7 escenarios), `frontend/src/app/pages/admin-reportes/admin-reportes.spec.ts`.
 
 **Dependencias:** HU-05, HU-03.
+
+---
+
+## HU-07 — Votos en publicaciones y comentarios
+
+- **Prioridad:** Media
+- **Estado:** en desarrollo (rama `feature/HU-07-votos`).
+- **Descripción:** Como usuario del foro, quiero votar publicaciones y comentarios para reconocer el contenido útil.
+
+**Criterios de aceptación**
+1. Un usuario autenticado vota POSITIVO o NEGATIVO en una publicación o comentario que no sea suyo. Hay un único voto por usuario y elemento; cambiarlo actualiza ese voto y volver a pulsar el mismo voto lo retira.
+2. Los listados y detalles muestran ambos conteos y, si el visitante inició sesión, su voto actual. El cambio agrega información sin quitar campos usados por el frontend.
+3. Sin sesión → `401`; voto inválido → `400`; voto propio → `403`; elemento inexistente → `404`.
+
+**Escenarios:** ✅ votar y cambiar voto · ✅ retirar voto · ✅ resumen público y voto propio · ❌ votar contenido propio · ❌ sin sesión · ❌ valor inválido · ❌ recurso inexistente.
+
+**Pruebas relacionadas:** `tests/integration/votos.service.test.ts`, `tests/integration/votos.routes.test.ts`, `features/votos.feature`, `frontend/src/app/shared/voto-control.spec.ts`.
+
+**Dependencias:** HU-02, HU-03, HU-04.
+
+---
+
+## HU-08 — Ocultar publicaciones durante revisión
+
+- **Prioridad:** Media
+- **Estado:** acordada; implementación pendiente.
+- **Descripción:** Como administrador, quiero ocultar y restaurar publicaciones mientras reviso una denuncia para evitar que contenido dudoso siga visible.
+
+**Criterios de aceptación**
+1. Solo ADMIN puede ocultar o restaurar una publicación; la transición es idempotente y queda documentada.
+2. Una publicación oculta no aparece en listados o detalles públicos, ni permite comentarios o nuevas denuncias; esas consultas responden `404`.
+3. El panel de reportes permite identificar el estado y restaurar publicaciones ocultas. Sin sesión → `401`; estudiante → `403`; id inexistente → `404`.
+
+**Pruebas relacionadas:** servicio, endpoint (Supertest), escenarios Gherkin y prueba de componente para las acciones de moderación.
+
+**Dependencias:** HU-05, HU-06b.
+
+---
+
+## HU-09 — Historial de moderación y borrado lógico
+
+- **Prioridad:** Media
+- **Estado:** acordada; depende de HU-08.
+- **Descripción:** Como administrador, quiero consultar las acciones de moderación y conservar evidencia al retirar una publicación para auditar decisiones.
+
+**Criterios de aceptación**
+1. Los cambios de estado de reportes y las acciones de ocultar, restaurar o eliminar se registran como eventos inmutables con administrador, acción, recurso y fecha; se listan del más reciente al más antiguo, con filtros por publicación y acción.
+2. Eliminar una publicación denunciada la marca como eliminada sin borrar físicamente la publicación, comentarios ni reportes; deja de estar disponible públicamente y se registra la acción.
+3. Solo ADMIN puede consultar el historial. Sin sesión → `401`; estudiante → `403`; recurso inexistente en un filtro → `404`.
+
+**Pruebas relacionadas:** servicio, endpoint (Supertest), escenarios Gherkin y prueba de componente del historial.
+
+**Dependencias:** HU-08, HU-06b.

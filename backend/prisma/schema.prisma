@@ -17,6 +17,11 @@ enum Rol {
   ADMIN
 }
 
+enum ValorVoto {
+  POSITIVO
+  NEGATIVO
+}
+
 model Usuario {
   id           Int      @id @default(autoincrement())
   nombre       String   @db.VarChar(100)
@@ -26,9 +31,11 @@ model Usuario {
   rol          Rol      @default(ESTUDIANTE)
   creadoEn     DateTime @default(now()) @map("creado_en")
 
-  publicaciones Publicacion[]
-  comentarios   Comentario[]
-  reportes      Reporte[]
+  publicaciones    Publicacion[]
+  comentarios      Comentario[]
+  reportes         Reporte[]
+  votosPublicacion VotoPublicacion[]
+  votosComentario  VotoComentario[]
 
   @@map("usuarios")
 }
@@ -61,6 +68,7 @@ model Publicacion {
 
   comentarios Comentario[]
   reportes    Reporte[]
+  votos       VotoPublicacion[]
 
   @@index([categoriaId])
   @@index([creadoEn])
@@ -77,6 +85,8 @@ model Comentario {
   publicacionId Int         @map("publicacion_id")
   publicacion   Publicacion @relation(fields: [publicacionId], references: [id], onDelete: Cascade)
   creadoEn      DateTime    @default(now()) @map("creado_en")
+
+  votos VotoComentario[]
 
   @@index([publicacionId])
   @@map("comentarios")
@@ -105,4 +115,33 @@ model Reporte {
   @@unique([autorId, publicacionId])
   @@index([estado])
   @@map("reportes")
+}
+
+// HU-07 · Votos en publicaciones y comentarios
+model VotoPublicacion {
+  id            Int         @id @default(autoincrement())
+  valor         ValorVoto
+  usuarioId     Int         @map("usuario_id")
+  usuario       Usuario     @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  publicacionId Int         @map("publicacion_id")
+  publicacion   Publicacion @relation(fields: [publicacionId], references: [id], onDelete: Cascade)
+  creadoEn      DateTime    @default(now()) @map("creado_en")
+
+  @@unique([usuarioId, publicacionId])
+  @@index([publicacionId, valor])
+  @@map("votos_publicaciones")
+}
+
+model VotoComentario {
+  id           Int        @id @default(autoincrement())
+  valor        ValorVoto
+  usuarioId    Int        @map("usuario_id")
+  usuario      Usuario    @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  comentarioId Int        @map("comentario_id")
+  comentario   Comentario @relation(fields: [comentarioId], references: [id], onDelete: Cascade)
+  creadoEn     DateTime   @default(now()) @map("creado_en")
+
+  @@unique([usuarioId, comentarioId])
+  @@index([comentarioId, valor])
+  @@map("votos_comentarios")
 }

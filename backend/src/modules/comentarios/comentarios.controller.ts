@@ -3,7 +3,10 @@ import { idDeRuta } from '../../middlewares/validar';
 import * as comentariosService from './comentarios.service';
 
 export const listar: RequestHandler = async (req, res) => {
-  const comentarios = await comentariosService.listarComentarios(idDeRuta(req.params.publicacionId, 'Publicación'));
+  const comentarios = await comentariosService.listarComentarios(
+    idDeRuta(req.params.publicacionId, 'Publicación'),
+    req.usuario?.id,
+  );
   res.json({ comentarios });
 };
 
