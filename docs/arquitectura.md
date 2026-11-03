@@ -91,11 +91,11 @@ Usuario 1──* Reporte *──1 Publicacion
 |---|---|---|
 | `usuarios` | id, nombre, email, password_hash, rol, creado_en | PK id · `UNIQUE(email)` (guardado en minúsculas) · rol ∈ {ESTUDIANTE, ADMIN} |
 | `categorias` | id, nombre, nombre_normalizado, creado_en | PK id · `UNIQUE(nombre_normalizado)` (nombre en minúsculas) |
-| `publicaciones` | id, titulo, contenido, autor_id, categoria_id, creado_en, actualizado_en | FK autor → usuarios · FK categoría → categorias (`RESTRICT`) |
+| `publicaciones` | id, titulo, contenido, autor_id, categoria_id, creado_en, actualizado_en, oculta_en | FK autor → usuarios · FK categoría → categorias (`RESTRICT`) · `oculta_en` nulo mientras es visible |
 | `comentarios` | id, contenido, autor_id, publicacion_id, creado_en | FK autor · FK publicación (`CASCADE`) |
 | `reportes` | id, motivo, estado, autor_id, publicacion_id, creado_en, actualizado_en | estado ∈ {PENDIENTE, RESUELTO, DESCARTADO} · `UNIQUE(autor_id, publicacion_id)` · FK publicación (`CASCADE`) |
 
-**Decisión a revisar:** al eliminar una publicación se eliminan en cascada sus comentarios y reportes. Es lo más simple para la v1; conservar el historial de moderación (borrado lógico) queda como posible feature futura.
+La visibilidad se controla mediante `oculta_en`: ocultar no borra ni modifica comentarios o reportes. HU-09 define el borrado lógico y el historial de moderación.
 
 ## 5. API REST
 
@@ -117,6 +117,7 @@ Prefijo `/api`. Formato de error uniforme:
 | POST | `/api/publicaciones` | autenticado | HU-03 |
 | PUT | `/api/publicaciones/:id` | autor | HU-03 |
 | DELETE | `/api/publicaciones/:id` | autor o ADMIN | HU-03 / HU-06b |
+| PATCH | `/api/publicaciones/:id/moderacion` | ADMIN | HU-08 |
 | GET | `/api/publicaciones/:id/comentarios` | público | HU-04 |
 | POST | `/api/publicaciones/:id/comentarios` | autenticado | HU-04 |
 | POST | `/api/publicaciones/:id/reportes` | autenticado | HU-05 |
@@ -223,6 +224,19 @@ Cuerpo de `POST` y `PUT` (el `PUT` reemplaza los tres campos; un `autorId` envia
 
 La categoría inexistente se detecta por la clave foránea (`P2003` → `400`), igual que los duplicados por `UNIQUE` (`P2002` → `409`). La FK a categorías es `RESTRICT`: una categoría con publicaciones no se puede borrar.
 
+#### Ocultar durante revisión (HU-08)
+
+`PATCH /api/publicaciones/:id/moderacion` · ADMIN. Cuerpo: `{ "oculta": true | false }`. Responde `200` con `{ "publicacion": { "id", "titulo", "oculta", "ocultaEn" } }`; repetir el estado actual es idempotente y conserva la fecha de ocultamiento.
+
+| Código | Cuándo |
+|---|---|
+| `400` | falta `oculta` o no es booleano |
+| `401` | sin token o token inválido |
+| `403` | el usuario no es ADMIN |
+| `404` | publicación inexistente |
+
+Las publicaciones ocultas no aparecen en listados ni detalles públicos. Las consultas y operaciones de comentarios y denuncias contra una publicación oculta responden `404`. El listado administrativo de reportes conserva la denuncia y añade `publicacion.ocultaEn`, para que el panel muestre el estado y permita restaurarla.
+
 #### Comentarios (HU-04)
 
 Se montan como sub-recurso: `/api/publicaciones/:publicacionId/comentarios` (router con `mergeParams`). Un comentario se devuelve como `{ "id", "contenido", "creadoEn", "autor": { "id", "nombre" } }`.
@@ -232,7 +246,7 @@ Se montan como sub-recurso: `/api/publicaciones/:publicacionId/comentarios` (rou
 | `GET /api/publicaciones/:id/comentarios` | público | `200` `{ "comentarios": [...] }`, más antiguos primero | `404` si la publicación no existe o el id no es un entero positivo |
 | `POST /api/publicaciones/:id/comentarios` | autenticado | `201` `{ "comentario": {...} }` | `400` contenido vacío (también solo espacios) o de más de 2000 caracteres · `401` · `404` publicación inexistente |
 
-Cuerpo del `POST`: `{ "contenido": "…" }` (se recortan espacios). La FK a la publicación es `CASCADE`: al eliminar una publicación se eliminan sus comentarios. Comentar una publicación inexistente se detecta por la clave foránea (`P2003` → `404`).
+Cuerpo del `POST`: `{ "contenido": "…" }` (se recortan espacios). La FK a la publicación es `CASCADE`: al eliminar una publicación se eliminan sus comentarios. Comentar una publicación inexistente se detecta por la clave foránea (`P2003` → `404`); una publicación oculta también responde `404`.
 
 #### Denuncias (HU-05)
 

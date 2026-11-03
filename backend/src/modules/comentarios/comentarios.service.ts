@@ -11,7 +11,7 @@ const camposPublicos = {
 
 /** HU-04: cualquier visitante lista los comentarios de una publicación, los más antiguos primero. */
 export async function listarComentarios(publicacionId: number) {
-  const existe = await prisma.publicacion.count({ where: { id: publicacionId } });
+  const existe = await prisma.publicacion.count({ where: { id: publicacionId, ocultaEn: null } });
   if (!existe) {
     throw AppError.noEncontrado('Publicación');
   }
@@ -24,6 +24,13 @@ export async function listarComentarios(publicacionId: number) {
 
 /** HU-04: un usuario autenticado comenta; si la publicación no existe (FK), 404. */
 export async function comentar(publicacionId: number, autorId: number, datos: { contenido: string }) {
+  const publicacion = await prisma.publicacion.findFirst({
+    where: { id: publicacionId, ocultaEn: null },
+    select: { id: true },
+  });
+  if (!publicacion) {
+    throw AppError.noEncontrado('Publicación');
+  }
   try {
     return await prisma.comentario.create({
       data: { contenido: datos.contenido, autorId, publicacionId },

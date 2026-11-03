@@ -13,6 +13,13 @@ const camposPublicos = {
 
 /** HU-05: un usuario autenticado denuncia una publicación; queda PENDIENTE hasta que la modere un ADMIN. */
 export async function denunciar(publicacionId: number, autorId: number, datos: { motivo: string }) {
+  const publicacion = await prisma.publicacion.findFirst({
+    where: { id: publicacionId, ocultaEn: null },
+    select: { id: true },
+  });
+  if (!publicacion) {
+    throw AppError.noEncontrado('Publicación');
+  }
   try {
     return await prisma.reporte.create({
       data: { motivo: datos.motivo, autorId, publicacionId },
@@ -31,6 +38,7 @@ const camposModeracion = {
   ...camposPublicos,
   actualizadoEn: true,
   autor: { select: { id: true, nombre: true } },
+  publicacion: { select: { id: true, titulo: true, ocultaEn: true } },
 } as const;
 
 /** HU-06b: un administrador lista los reportes de un estado (por defecto PENDIENTE), más antiguos primero. */

@@ -39,6 +39,20 @@
             <time [attr.datetime]="reporte.creadoEn">{{ reporte.creadoEn | date: 'd/M/yyyy HH:mm' }}</time>
           </p>
 
+          @if (reporte.publicacion.ocultaEn) {
+            <p class="meta">Oculta durante revisión</p>
+          }
+          <div class="acciones">
+            <button
+              type="button"
+              class="boton boton--secundario"
+              [disabled]="procesando() === reporte.id"
+              (click)="cambiarVisibilidad(reporte)"
+            >
+              {{ reporte.publicacion.ocultaEn ? 'Restaurar publicación' : 'Ocultar durante revisión' }}
+            </button>
+          </div>
+
           @if (reporte.estado === 'PENDIENTE') {
             <div class="acciones">
               @if (confirmandoBorrado() === reporte.id) {

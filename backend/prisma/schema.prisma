@@ -58,6 +58,7 @@ model Publicacion {
   categoria     Categoria @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
   creadoEn      DateTime  @default(now()) @map("creado_en")
   actualizadoEn DateTime  @updatedAt @map("actualizado_en")
+  ocultaEn      DateTime? @map("oculta_en")
 
   comentarios Comentario[]
   reportes    Reporte[]

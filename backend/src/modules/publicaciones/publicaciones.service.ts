@@ -26,18 +26,35 @@ const camposPublicos = {
 /** HU-03: cualquier visitante lista publicaciones, las más recientes primero. */
 export function listarPublicaciones(filtro: { categoriaId?: number }) {
   return prisma.publicacion.findMany({
-    where: { categoriaId: filtro.categoriaId },
+    where: { categoriaId: filtro.categoriaId, ocultaEn: null },
     select: camposPublicos,
     orderBy: [{ creadoEn: 'desc' }, { id: 'desc' }],
   });
 }
 
 export async function obtenerPublicacion(id: number) {
-  const publicacion = await prisma.publicacion.findUnique({ where: { id }, select: camposPublicos });
+  const publicacion = await prisma.publicacion.findFirst({ where: { id, ocultaEn: null }, select: camposPublicos });
   if (!publicacion) {
     throw AppError.noEncontrado('Publicación');
   }
   return publicacion;
+}
+
+export async function cambiarVisibilidadPublicacion(id: number, oculta: boolean) {
+  const actual = await prisma.publicacion.findUnique({ where: { id }, select: { id: true, titulo: true, ocultaEn: true } });
+  if (!actual) {
+    throw AppError.noEncontrado('Publicación');
+  }
+  if (Boolean(actual.ocultaEn) === oculta) {
+    return { ...actual, oculta };
+  }
+
+  const publicacion = await prisma.publicacion.update({
+    where: { id },
+    data: { ocultaEn: oculta ? new Date() : null },
+    select: { id: true, titulo: true, ocultaEn: true },
+  });
+  return { ...publicacion, oculta: Boolean(publicacion.ocultaEn) };
 }
 
 /** HU-03: un usuario autenticado publica en una categoría existente. */

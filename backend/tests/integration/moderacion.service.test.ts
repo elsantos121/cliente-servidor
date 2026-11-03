@@ -35,10 +35,13 @@ describe('reportes.service · listarReportes (HU-06b)', () => {
         estado: 'PENDIENTE',
         creadoEn: expect.any(Date),
         actualizadoEn: expect.any(Date),
-        publicacion: { id: primeraId, titulo: 'Primera' },
+        publicacion: { id: primeraId, titulo: 'Primera', ocultaEn: null },
         autor: { id: betoId, nombre: 'Beto' },
       },
-      expect.objectContaining({ motivo: 'Es spam evidente', publicacion: { id: segundaId, titulo: 'Segunda' } }),
+      expect.objectContaining({
+        motivo: 'Es spam evidente',
+        publicacion: { id: segundaId, titulo: 'Segunda', ocultaEn: null },
+      }),
     ]);
   });
 

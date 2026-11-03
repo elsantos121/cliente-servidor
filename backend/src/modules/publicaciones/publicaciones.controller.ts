@@ -1,6 +1,6 @@
 import type { RequestHandler } from 'express';
 import { idDeRuta, parsear } from '../../middlewares/validar';
-import { esquemaFiltro } from './publicaciones.schemas';
+import { esquemaCambioVisibilidad, esquemaFiltro } from './publicaciones.schemas';
 import * as publicacionesService from './publicaciones.service';
 
 const RECURSO = 'Publicación';
@@ -30,4 +30,11 @@ export const editar: RequestHandler = async (req, res) => {
 export const eliminar: RequestHandler = async (req, res) => {
   await publicacionesService.eliminarPublicacion(idDeRuta(req.params.id, RECURSO), req.usuario!);
   res.status(204).end();
+};
+
+export const cambiarVisibilidad: RequestHandler = async (req, res) => {
+  const id = idDeRuta(req.params.id, RECURSO);
+  const { oculta } = parsear(esquemaCambioVisibilidad, req.body);
+  const publicacion = await publicacionesService.cambiarVisibilidadPublicacion(id, oculta);
+  res.json({ publicacion });
 };

@@ -50,7 +50,7 @@ describe('GET /api/reportes (HU-06b)', () => {
         id: reporteId,
         motivo: 'Contenido ofensivo',
         estado: 'PENDIENTE',
-        publicacion: { id: publicacionId, titulo: 'Publicación dudosa' },
+        publicacion: { id: publicacionId, titulo: 'Publicación dudosa', ocultaEn: null },
         autor: expect.objectContaining({ nombre: 'Beto' }),
       }),
     ]);

@@ -43,6 +43,15 @@ Característica: Flujo completo del foro
     Dado que inicié sesión con correo "admin@uni.edu" y contraseña "admin12345"
     Cuando consulto los reportes
     Entonces los reportes listados son de "Oferta de apuntes" con el motivo "Venta de material, prohibida por las reglas" y estado "PENDIENTE"
+    # HU-08 · el administrador oculta durante la revisión y después restaura
+    Cuando cambio la visibilidad de "Oferta de apuntes" a "oculta"
+    Entonces la respuesta tiene código 200
+    Y la publicación "Oferta de apuntes" está oculta en el reporte
+    Cuando consulto las publicaciones
+    Entonces no se lista ninguna publicación
+    Cuando cambio la visibilidad de "Oferta de apuntes" a "visible"
+    Entonces la respuesta tiene código 200
+    # HU-06b · el administrador elimina la publicación denunciada
     Cuando elimino la publicación "Oferta de apuntes"
     Entonces la respuesta tiene código 204
     Y la publicación "Oferta de apuntes" ya no existe

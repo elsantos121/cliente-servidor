@@ -3,7 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
-import { ErrorApi, EstadoReporte, ReporteModeracion } from '../../core/modelos';
+import { ErrorApi, EstadoReporte, ReporteModeracion, VisibilidadPublicacion } from '../../core/modelos';
 import { PublicacionesService } from '../../core/publicaciones.service';
 import { ReportesService } from '../../core/reportes.service';
 
@@ -85,15 +85,35 @@ export class AdminReportes {
     });
   }
 
-  private ejecutar(reporte: ReporteModeracion, operacion: Observable<unknown>, alTerminar: () => void): void {
+  protected cambiarVisibilidad(reporte: ReporteModeracion): void {
+    const oculta = !reporte.publicacion.ocultaEn;
+    this.ejecutar(reporte, this.publicacionesService.cambiarVisibilidad(reporte.publicacion.id, oculta), (publicacion) => {
+      this.reportes.update((lista) =>
+        lista.map((item) =>
+          item.id === reporte.id
+            ? { ...item, publicacion: { ...item.publicacion, ocultaEn: publicacion.ocultaEn } }
+            : item,
+        ),
+      );
+      this.aviso.set(
+        `La publicación «${reporte.publicacion.titulo}» ${oculta ? 'se ocultó durante la revisión' : 'se restauró'}.`,
+      );
+    });
+  }
+
+  private ejecutar<T>(
+    reporte: ReporteModeracion,
+    operacion: Observable<T>,
+    alTerminar: (resultado: T) => void,
+  ): void {
     this.procesando.set(reporte.id);
     this.aviso.set(null);
     this.errores.update((e) => ({ ...e, [reporte.id]: '' }));
     operacion.subscribe({
-      next: () => {
+      next: (resultado) => {
         this.procesando.set(null);
         this.confirmandoBorrado.set(null);
-        alTerminar();
+        alTerminar(resultado);
       },
       error: (respuesta: HttpErrorResponse) => {
         this.procesando.set(null);

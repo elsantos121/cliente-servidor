@@ -59,4 +59,12 @@ export interface Reporte {
 export interface ReporteModeracion extends Reporte {
   actualizadoEn: string;
   autor: { id: number; nombre: string };
+  publicacion: Reporte['publicacion'] & { ocultaEn: string | null };
+}
+
+export interface VisibilidadPublicacion {
+  id: number;
+  titulo: string;
+  oculta: boolean;
+  ocultaEn: string | null;
 }
