@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { autenticar } from '../../middlewares/autenticar';
+import { autenticar, autorizar } from '../../middlewares/autenticar';
 import { validar } from '../../middlewares/validar';
 import * as publicacionesController from './publicaciones.controller';
 import { esquemaPublicacion } from './publicaciones.schemas';
@@ -9,6 +9,7 @@ export const publicacionesRouter = Router();
 
 publicacionesRouter.get('/', publicacionesController.listar);
 publicacionesRouter.get('/:id', publicacionesController.detalle);
+publicacionesRouter.patch('/:id/moderacion', autenticar, autorizar('ADMIN'), publicacionesController.cambiarVisibilidad);
 publicacionesRouter.post('/', autenticar, validar(esquemaPublicacion), publicacionesController.crear);
 publicacionesRouter.put('/:id', autenticar, validar(esquemaPublicacion), publicacionesController.editar);
 publicacionesRouter.delete('/:id', autenticar, publicacionesController.eliminar);

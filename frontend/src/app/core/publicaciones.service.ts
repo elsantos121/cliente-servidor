@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { DatosPublicacion, Publicacion } from './modelos';
+import { DatosPublicacion, Publicacion, VisibilidadPublicacion } from './modelos';
 
 /** HU-03: publicaciones. El token de las operaciones protegidas lo agrega el interceptor. */
 @Injectable({ providedIn: 'root' })
@@ -33,5 +33,11 @@ export class PublicacionesService {
 
   eliminar(id: number): Observable<void> {
     return this.http.delete<void>(`${this.url}/${id}`);
+  }
+
+  cambiarVisibilidad(id: number, oculta: boolean): Observable<VisibilidadPublicacion> {
+    return this.http
+      .patch<{ publicacion: VisibilidadPublicacion }>(`${this.url}/${id}/moderacion`, { oculta })
+      .pipe(map((r) => r.publicacion));
   }
 }

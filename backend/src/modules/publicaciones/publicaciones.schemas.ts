@@ -24,3 +24,7 @@ export const esquemaPublicacion = z.object({
 export const esquemaFiltro = z.object({
   categoriaId: categoriaId.optional(),
 });
+
+export const esquemaCambioVisibilidad = z.object({
+  oculta: z.boolean({ error: 'La visibilidad debe ser un booleano' }),
+});

@@ -26,9 +26,10 @@ model Usuario {
   rol          Rol      @default(ESTUDIANTE)
   creadoEn     DateTime @default(now()) @map("creado_en")
 
-  publicaciones Publicacion[]
-  comentarios   Comentario[]
-  reportes      Reporte[]
+  publicaciones     Publicacion[]
+  comentarios       Comentario[]
+  reportes          Reporte[]
+  eventosModeracion EventoModeracion[] @relation("ActorEventoModeracion")
 
   @@map("usuarios")
 }
@@ -58,9 +59,12 @@ model Publicacion {
   categoria     Categoria @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
   creadoEn      DateTime  @default(now()) @map("creado_en")
   actualizadoEn DateTime  @updatedAt @map("actualizado_en")
+  ocultaEn      DateTime? @map("oculta_en")
+  eliminadaEn   DateTime? @map("eliminada_en")
 
-  comentarios Comentario[]
-  reportes    Reporte[]
+  comentarios       Comentario[]
+  reportes          Reporte[]
+  eventosModeracion EventoModeracion[]
 
   @@index([categoriaId])
   @@index([creadoEn])
@@ -73,7 +77,7 @@ model Comentario {
   contenido     String      @db.VarChar(2000)
   autorId       Int         @map("autor_id")
   autor         Usuario     @relation(fields: [autorId], references: [id], onDelete: Restrict)
-  /// CASCADE: al borrar la publicación se borran sus comentarios (decisión de la v1).
+  /// La FK permite cascada física; el endpoint de borrado conserva comentarios mediante borrado lógico.
   publicacionId Int         @map("publicacion_id")
   publicacion   Publicacion @relation(fields: [publicacionId], references: [id], onDelete: Cascade)
   creadoEn      DateTime    @default(now()) @map("creado_en")
@@ -90,19 +94,45 @@ enum EstadoReporte {
 }
 
 model Reporte {
-  id            Int           @id @default(autoincrement())
-  motivo        String        @db.VarChar(500)
-  estado        EstadoReporte @default(PENDIENTE)
-  autorId       Int           @map("autor_id")
-  autor         Usuario       @relation(fields: [autorId], references: [id], onDelete: Restrict)
-  /// CASCADE: al borrar la publicación se borran sus denuncias (decisión de la v1).
-  publicacionId Int           @map("publicacion_id")
-  publicacion   Publicacion   @relation(fields: [publicacionId], references: [id], onDelete: Cascade)
-  creadoEn      DateTime      @default(now()) @map("creado_en")
-  actualizadoEn DateTime      @updatedAt @map("actualizado_en")
+  id                Int                @id @default(autoincrement())
+  motivo            String             @db.VarChar(500)
+  estado            EstadoReporte      @default(PENDIENTE)
+  autorId           Int                @map("autor_id")
+  autor             Usuario            @relation(fields: [autorId], references: [id], onDelete: Restrict)
+  /// La FK permite cascada física; el endpoint de borrado conserva denuncias mediante borrado lógico.
+  publicacionId     Int                @map("publicacion_id")
+  publicacion       Publicacion        @relation(fields: [publicacionId], references: [id], onDelete: Cascade)
+  creadoEn          DateTime           @default(now()) @map("creado_en")
+  actualizadoEn     DateTime           @updatedAt @map("actualizado_en")
+  eventosModeracion EventoModeracion[]
 
   /// Un usuario denuncia una misma publicación una sola vez.
   @@unique([autorId, publicacionId])
   @@index([estado])
   @@map("reportes")
+}
+
+enum AccionModeracion {
+  REPORTE_RESUELTO
+  REPORTE_DESCARTADO
+  PUBLICACION_OCULTADA
+  PUBLICACION_RESTAURADA
+  PUBLICACION_ELIMINADA
+}
+
+// HU-09 · eventos append-only de auditoría.
+model EventoModeracion {
+  id            Int              @id @default(autoincrement())
+  accion        AccionModeracion
+  actorId       Int              @map("actor_id")
+  actor         Usuario          @relation("ActorEventoModeracion", fields: [actorId], references: [id], onDelete: Restrict)
+  publicacionId Int              @map("publicacion_id")
+  publicacion   Publicacion      @relation(fields: [publicacionId], references: [id], onDelete: Restrict)
+  reporteId     Int?             @map("reporte_id")
+  reporte       Reporte?         @relation(fields: [reporteId], references: [id], onDelete: Restrict)
+  creadoEn      DateTime         @default(now()) @map("creado_en")
+
+  @@index([publicacionId, creadoEn])
+  @@index([accion, creadoEn])
+  @@map("eventos_moderacion")
 }

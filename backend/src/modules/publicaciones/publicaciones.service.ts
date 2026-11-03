@@ -26,18 +26,62 @@ const camposPublicos = {
 /** HU-03: cualquier visitante lista publicaciones, las más recientes primero. */
 export function listarPublicaciones(filtro: { categoriaId?: number }) {
   return prisma.publicacion.findMany({
-    where: { categoriaId: filtro.categoriaId },
+    where: { categoriaId: filtro.categoriaId, ocultaEn: null, eliminadaEn: null },
     select: camposPublicos,
     orderBy: [{ creadoEn: 'desc' }, { id: 'desc' }],
   });
 }
 
 export async function obtenerPublicacion(id: number) {
-  const publicacion = await prisma.publicacion.findUnique({ where: { id }, select: camposPublicos });
+  const publicacion = await prisma.publicacion.findFirst({
+    where: { id, ocultaEn: null, eliminadaEn: null },
+    select: camposPublicos,
+  });
   if (!publicacion) {
     throw AppError.noEncontrado('Publicación');
   }
   return publicacion;
+}
+
+export async function cambiarVisibilidadPublicacion(id: number, oculta: boolean, actorId: number) {
+  return prisma.$transaction(async (tx) => {
+    const actual = await tx.publicacion.findFirst({
+      where: { id, eliminadaEn: null },
+      select: { id: true, titulo: true, ocultaEn: true },
+    });
+    if (!actual) {
+      throw AppError.noEncontrado('Publicación');
+    }
+    if (Boolean(actual.ocultaEn) === oculta) {
+      return { ...actual, oculta };
+    }
+
+    const ocultaEn = oculta ? new Date() : null;
+    const actualizacion = await tx.publicacion.updateMany({
+      where: { id, eliminadaEn: null, ocultaEn: actual.ocultaEn },
+      data: { ocultaEn },
+    });
+    if (actualizacion.count === 0) {
+      const actualizada = await tx.publicacion.findFirst({
+        where: { id, eliminadaEn: null },
+        select: { id: true, titulo: true, ocultaEn: true },
+      });
+      if (!actualizada) throw AppError.noEncontrado('Publicación');
+      if (Boolean(actualizada.ocultaEn) !== oculta) {
+        throw AppError.conflicto('La visibilidad cambió durante la operación');
+      }
+      return { ...actualizada, oculta };
+    }
+
+    await tx.eventoModeracion.create({
+      data: {
+        accion: oculta ? 'PUBLICACION_OCULTADA' : 'PUBLICACION_RESTAURADA',
+        actorId,
+        publicacionId: id,
+      },
+    });
+    return { ...actual, ocultaEn, oculta };
+  });
 }
 
 /** HU-03: un usuario autenticado publica en una categoría existente. */
@@ -62,17 +106,28 @@ export async function editarPublicacion(id: number, usuario: UsuarioToken, datos
   }
 }
 
-/** HU-03 / HU-06b: puede eliminar el autor o un administrador. */
+/** HU-03 / HU-06b / HU-09: el autor o ADMIN retira la publicación sin borrar su contenido. */
 export async function eliminarPublicacion(id: number, usuario: UsuarioToken) {
   const { autorId } = await buscarAutor(id);
   if (autorId !== usuario.id && usuario.rol !== 'ADMIN') {
     throw AppError.prohibido('Solo el autor o un administrador pueden eliminar la publicación');
   }
-  await prisma.publicacion.delete({ where: { id } });
+  await prisma.$transaction(async (tx) => {
+    const eliminacion = await tx.publicacion.updateMany({
+      where: { id, eliminadaEn: null },
+      data: { eliminadaEn: new Date() },
+    });
+    if (eliminacion.count !== 1) {
+      throw AppError.noEncontrado('Publicación');
+    }
+    await tx.eventoModeracion.create({
+      data: { accion: 'PUBLICACION_ELIMINADA', actorId: usuario.id, publicacionId: id },
+    });
+  });
 }
 
 async function buscarAutor(id: number) {
-  const publicacion = await prisma.publicacion.findUnique({ where: { id }, select: { autorId: true } });
+  const publicacion = await prisma.publicacion.findFirst({ where: { id, eliminadaEn: null }, select: { autorId: true } });
   if (!publicacion) {
     throw AppError.noEncontrado('Publicación');
   }

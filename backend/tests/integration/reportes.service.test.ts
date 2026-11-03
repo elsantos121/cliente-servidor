@@ -55,11 +55,11 @@ describe('reportes.service · denunciar (HU-05)', () => {
     await expect(denunciar(9999, betoId, { motivo: 'Contenido ofensivo' })).rejects.toMatchObject({ status: 404 });
   });
 
-  it('al eliminar la publicación se eliminan sus denuncias (cascada)', async () => {
+  it('al eliminar lógicamente la publicación se conservan sus denuncias', async () => {
     await denunciar(publicacionId, betoId, { motivo: 'Contenido ofensivo' });
 
     await eliminarPublicacion(publicacionId, { id: anaId, rol: 'ESTUDIANTE' });
 
-    expect(await prisma.reporte.count()).toBe(0);
+    expect(await prisma.reporte.count({ where: { publicacionId } })).toBe(1);
   });
 });

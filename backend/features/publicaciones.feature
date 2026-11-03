@@ -74,7 +74,7 @@ Característica: Publicaciones
     Y que inicié sesión con correo "ana@uni.edu" y contraseña "secreta123"
     Cuando elimino la publicación "Primera"
     Entonces la respuesta tiene código 204
-    Y la publicación "Primera" ya no existe
+    Y la publicación "Primera" fue eliminada lógicamente
 
   Escenario: Eliminar una publicación ajena
     Dado que "ana@uni.edu" publicó "Primera" en la categoría "Matemática"

@@ -30,7 +30,7 @@ Característica: Moderación de reportes
     Dado que inicié sesión con correo "admin@uni.edu" y contraseña "admin12345"
     Cuando elimino la publicación "Publicación dudosa"
     Entonces la respuesta tiene código 204
-    Y la publicación "Publicación dudosa" ya no existe
+    Y la publicación "Publicación dudosa" fue eliminada lógicamente
     Y no hay reportes pendientes
 
   Escenario: Estado inválido

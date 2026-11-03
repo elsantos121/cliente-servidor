@@ -6,6 +6,7 @@
       @if (sesion.esAdmin()) {
         <a routerLink="/admin/categorias">Categorías</a>
         <a routerLink="/admin/reportes">Reportes</a>
+        <a routerLink="/admin/historial">Historial</a>
       }
       <a routerLink="/ayuda">Ayuda</a>
       <span class="usuario">{{ usuario.nombre }}@if (sesion.esAdmin()) { <span class="etiqueta">admin</span>}</span>

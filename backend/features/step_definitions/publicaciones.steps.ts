@@ -92,8 +92,11 @@ Then(/^las publicaciones listadas son (.+)$/, function (this: ForoWorld, texto: 
   assert.deepEqual(titulos, listaEntreComillas(texto));
 });
 
-Then('la publicación {string} ya no existe', async function (titulo: string) {
-  assert.equal(await prisma.publicacion.count({ where: { titulo } }), 0);
+Then('la publicación {string} fue eliminada lógicamente', async function (this: ForoWorld, titulo: string) {
+  const publicacion = await prisma.publicacion.findFirstOrThrow({ where: { titulo } });
+  assert.ok(publicacion.eliminadaEn);
+  this.respuesta = await request(app).get(`/api/publicaciones/${publicacion.id}`);
+  assert.equal(this.respuesta.status, 404);
 });
 
 Then('no se lista ninguna publicación', function (this: ForoWorld) {

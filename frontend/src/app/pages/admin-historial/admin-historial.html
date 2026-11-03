@@ -1,0 +1,47 @@
+<section class="panel" aria-labelledby="titulo-historial">
+  <h1 id="titulo-historial">Historial de moderación</h1>
+
+  <form class="filtros" (submit)="$event.preventDefault(); filtrar(publicacionId.value, accion.value)">
+    <label for="publicacionId">ID de publicación</label>
+    <input #publicacionId id="publicacionId" type="number" min="1" inputmode="numeric" />
+
+    <label for="accion">Acción</label>
+    <select #accion id="accion">
+      <option value="">Todas las acciones</option>
+      @for (opcion of acciones; track opcion) {
+        <option [value]="opcion">{{ etiquetas[opcion] }}</option>
+      }
+    </select>
+
+    <button type="submit">Filtrar</button>
+  </form>
+
+  @if (cargando()) {
+    <p role="status">Cargando historial…</p>
+  } @else if (error(); as mensaje) {
+    <div role="alert">
+      <p>{{ mensaje }}</p>
+      <button type="button" (click)="cargar()">Reintentar</button>
+    </div>
+  } @else if (eventos().length === 0) {
+    <p>No hay eventos de moderación.</p>
+  } @else {
+    <ol class="eventos">
+      @for (evento of eventos(); track evento.id) {
+        <li class="evento">
+          <h2>{{ etiquetas[evento.accion] }}</h2>
+          @if (evento.publicacion) {
+            <p>Publicación: {{ evento.publicacion.titulo }} (#{{ evento.publicacion.id }})</p>
+          }
+          @if (evento.reporte) {
+            <p>Reporte: «{{ evento.reporte.motivo }}» · {{ evento.reporte.estado }}</p>
+          }
+          <p>
+            Por {{ evento.actor.nombre }} ({{ evento.actor.rol }}) ·
+            <time [attr.datetime]="evento.creadoEn">{{ evento.creadoEn | date: 'd/M/yyyy HH:mm' }}</time>
+          </p>
+        </li>
+      }
+    </ol>
+  }
+</section>

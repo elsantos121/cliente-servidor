@@ -85,17 +85,21 @@ Usuario 1──* Publicacion *──1 Categoria
 Comentario ──────┘          (Comentario: autor + publicación)
    
 Usuario 1──* Reporte *──1 Publicacion
+Usuario 1──* EventoModeracion *──1 Publicacion
+                    │
+                    └──0..1 Reporte
 ```
 
 | Tabla | Campos principales | Restricciones |
 |---|---|---|
 | `usuarios` | id, nombre, email, password_hash, rol, creado_en | PK id · `UNIQUE(email)` (guardado en minúsculas) · rol ∈ {ESTUDIANTE, ADMIN} |
 | `categorias` | id, nombre, nombre_normalizado, creado_en | PK id · `UNIQUE(nombre_normalizado)` (nombre en minúsculas) |
-| `publicaciones` | id, titulo, contenido, autor_id, categoria_id, creado_en, actualizado_en | FK autor → usuarios · FK categoría → categorias (`RESTRICT`) |
+| `publicaciones` | id, titulo, contenido, autor_id, categoria_id, creado_en, actualizado_en, oculta_en, eliminada_en | FK autor → usuarios · FK categoría → categorias (`RESTRICT`) · marcas nulas mientras están visibles y activas |
 | `comentarios` | id, contenido, autor_id, publicacion_id, creado_en | FK autor · FK publicación (`CASCADE`) |
 | `reportes` | id, motivo, estado, autor_id, publicacion_id, creado_en, actualizado_en | estado ∈ {PENDIENTE, RESUELTO, DESCARTADO} · `UNIQUE(autor_id, publicacion_id)` · FK publicación (`CASCADE`) |
+| `eventos_moderacion` | id, accion, actor_id, publicacion_id, reporte_id, creado_en | actor y publicación (`RESTRICT`) · reporte opcional (`RESTRICT`) · índice por publicación/fecha y acción/fecha · eventos inmutables |
 
-**Decisión a revisar:** al eliminar una publicación se eliminan en cascada sus comentarios y reportes. Es lo más simple para la v1; conservar el historial de moderación (borrado lógico) queda como posible feature futura.
+La visibilidad se controla mediante `oculta_en`; el retiro definitivo de la vista pública usa `eliminada_en`. Ambas operaciones conservan comentarios y reportes. Los eventos se agregan en la misma transacción de cada cambio y la migración instala un trigger que rechaza actualizaciones y borrados de auditoría.
 
 ## 5. API REST
 
@@ -117,11 +121,13 @@ Prefijo `/api`. Formato de error uniforme:
 | POST | `/api/publicaciones` | autenticado | HU-03 |
 | PUT | `/api/publicaciones/:id` | autor | HU-03 |
 | DELETE | `/api/publicaciones/:id` | autor o ADMIN | HU-03 / HU-06b |
+| PATCH | `/api/publicaciones/:id/moderacion` | ADMIN | HU-08 |
 | GET | `/api/publicaciones/:id/comentarios` | público | HU-04 |
 | POST | `/api/publicaciones/:id/comentarios` | autenticado | HU-04 |
 | POST | `/api/publicaciones/:id/reportes` | autenticado | HU-05 |
 | GET | `/api/reportes?estado=PENDIENTE` | ADMIN | HU-06b |
 | PATCH | `/api/reportes/:id` | ADMIN | HU-06b |
+| GET | `/api/moderacion/historial?publicacionId=&accion=` | ADMIN | HU-09 |
 
 Códigos usados: `200`, `201`, `204`, `400` validación, `401` no autenticado, `403` sin permiso, `404` inexistente, `409` conflicto (duplicado), `500` error inesperado (sin detalles internos).
 
@@ -219,9 +225,24 @@ Cuerpo de `POST` y `PUT` (el `PUT` reemplaza los tres campos; un `autorId` envia
 | `GET /api/publicaciones/:id` | público | `200` `{ "publicacion": {...} }` | `404` si no existe o el id no es un entero positivo |
 | `POST /api/publicaciones` | autenticado | `201` `{ "publicacion": {...} }` | `400` datos inválidos o `categoriaId` inexistente (`detalles.categoriaId: "La categoría no existe"`) · `401` |
 | `PUT /api/publicaciones/:id` | solo el autor | `200` `{ "publicacion": {...} }` | `400` · `401` · `403` (incluso para un ADMIN) · `404` |
-| `DELETE /api/publicaciones/:id` | autor o ADMIN | `204` sin cuerpo | `401` · `403` · `404` |
+| `DELETE /api/publicaciones/:id` | autor o ADMIN | `204` sin cuerpo; borrado lógico | `401` · `403` · `404` |
 
 La categoría inexistente se detecta por la clave foránea (`P2003` → `400`), igual que los duplicados por `UNIQUE` (`P2002` → `409`). La FK a categorías es `RESTRICT`: una categoría con publicaciones no se puede borrar.
+
+El `DELETE` solo establece `eliminada_en` y registra `PUBLICACION_ELIMINADA`; no borra físicamente comentarios ni reportes. Las publicaciones retiradas dejan de aparecer en listados y detalles, y responden `404` en consultas/operaciones públicas, como las publicaciones ocultas.
+
+#### Ocultar durante revisión (HU-08)
+
+`PATCH /api/publicaciones/:id/moderacion` · ADMIN. Cuerpo: `{ "oculta": true | false }`. Responde `200` con `{ "publicacion": { "id", "titulo", "oculta", "ocultaEn" } }`; repetir el estado actual es idempotente y conserva la fecha de ocultamiento.
+
+| Código | Cuándo |
+|---|---|
+| `400` | falta `oculta` o no es booleano |
+| `401` | sin token o token inválido |
+| `403` | el usuario no es ADMIN |
+| `404` | publicación inexistente |
+
+Las publicaciones ocultas no aparecen en listados ni detalles públicos. Las consultas y operaciones de comentarios y denuncias contra una publicación oculta responden `404`. El listado administrativo de reportes conserva la denuncia y añade `publicacion.ocultaEn`, para que el panel muestre el estado y permita restaurarla.
 
 #### Comentarios (HU-04)
 
@@ -232,7 +253,7 @@ Se montan como sub-recurso: `/api/publicaciones/:publicacionId/comentarios` (rou
 | `GET /api/publicaciones/:id/comentarios` | público | `200` `{ "comentarios": [...] }`, más antiguos primero | `404` si la publicación no existe o el id no es un entero positivo |
 | `POST /api/publicaciones/:id/comentarios` | autenticado | `201` `{ "comentario": {...} }` | `400` contenido vacío (también solo espacios) o de más de 2000 caracteres · `401` · `404` publicación inexistente |
 
-Cuerpo del `POST`: `{ "contenido": "…" }` (se recortan espacios). La FK a la publicación es `CASCADE`: al eliminar una publicación se eliminan sus comentarios. Comentar una publicación inexistente se detecta por la clave foránea (`P2003` → `404`).
+Cuerpo del `POST`: `{ "contenido": "…" }` (se recortan espacios). La FK es `CASCADE` para borrados físicos; el endpoint de eliminación usa borrado lógico y conserva los comentarios. La publicación inexistente, oculta o eliminada responde `404` tanto al listar como al crear comentarios.
 
 #### Denuncias (HU-05)
 
@@ -246,7 +267,7 @@ Cuerpo del `POST`: `{ "contenido": "…" }` (se recortan espacios). La FK a la p
 | `404` | la publicación no existe o el id no es un entero positivo | `NO_ENCONTRADO` |
 | `409` | el usuario ya denunció esa publicación | `{ "error": { "codigo": "CONFLICTO", "mensaje": "Ya denunciaste esta publicación" } }` |
 
-La tabla `reportes` tiene `UNIQUE(autor_id, publicacion_id)` (el `409` sale de esa restricción, `P2002`) y la FK a la publicación es `CASCADE`. El estado (`PENDIENTE`, `RESUELTO`, `DESCARTADO`) lo cambia un administrador en HU-06b. En el frontend la opción de denunciar la ven los usuarios con sesión que no son el autor; el backend no impone esa restricción.
+La tabla `reportes` tiene `UNIQUE(autor_id, publicacion_id)` (el `409` sale de esa restricción, `P2002`) y la FK a la publicación es `CASCADE` para borrados físicos. El endpoint de eliminación conserva los reportes; la lista de moderación activa excluye publicaciones ya retiradas. La publicación inexistente, oculta o eliminada responde `404` al denunciar.
 
 #### Moderación de reportes (HU-06b)
 
@@ -255,10 +276,18 @@ Router `/api/reportes`, protegido completo con `autenticar` + `autorizar('ADMIN'
 | Método y ruta | Éxito | Errores |
 |---|---|---|
 | `GET /api/reportes?estado=` | `200` `{ "reportes": [...] }`, más antiguos primero; sin `estado` lista los `PENDIENTE` | `400` estado inválido · `401` · `403` (estudiante) |
-| `PATCH /api/reportes/:id` | `200` `{ "reporte": {...} }` | `400` si `estado` no es `RESUELTO` ni `DESCARTADO` (un reporte no vuelve a `PENDIENTE`) · `401` · `403` · `404` |
-| `DELETE /api/publicaciones/:id` | `204` (ya existía en HU-03: autor o ADMIN) | — |
+| `PATCH /api/reportes/:id` | `200` `{ "reporte": {...} }`; crea evento de auditoría atómicamente | `400` si `estado` no es `RESUELTO` ni `DESCARTADO` (un reporte no vuelve a `PENDIENTE`) · `401` · `403` · `404` |
+| `DELETE /api/publicaciones/:id` | `204`; establece `eliminada_en`, conserva datos y registra el actor | `401` · `403` · `404` |
 
-Cuerpo del `PATCH`: `{ "estado": "RESUELTO" | "DESCARTADO" }`. Eliminar la publicación denunciada borra en cascada sus comentarios y **todos** sus reportes, así que esos reportes desaparecen del listado en lugar de quedar como `RESUELTO`; conservar el historial (borrado lógico) es la feature futura anotada en el plan. El reporte inexistente se detecta con `P2025` en el mismo `update` (`traducirErrorPrisma(error, { inexistente })`).
+Cuerpo del `PATCH`: `{ "estado": "RESUELTO" | "DESCARTADO" }`. Los reportes de una publicación eliminada se conservan en la base y se excluyen de la cola activa. El reporte inexistente se detecta con `P2025` en la misma transacción (`traducirErrorPrisma(error, { inexistente })`).
+
+#### Historial de moderación y borrado lógico (HU-09)
+
+`GET /api/moderacion/historial?publicacionId=&accion=` · solo ADMIN. Devuelve `{ "eventos": [...] }`, con los más recientes primero y desempate por id descendente. Cada evento contiene `{ id, accion, creadoEn, actor: { id, nombre, rol }, publicacion: { id, titulo }, reporte: { id, estado, motivo } | null }`.
+
+Acciones: `REPORTE_RESUELTO`, `REPORTE_DESCARTADO`, `PUBLICACION_OCULTADA`, `PUBLICACION_RESTAURADA`, `PUBLICACION_ELIMINADA`. Ambos filtros son opcionales; `publicacionId` debe ser un entero positivo y `accion` una de esas acciones (`400` si no). Un id de publicación inexistente devuelve `404`; acceso sin sesión devuelve `401` y un estudiante recibe `403`. El modelo es append-only: no existe endpoint de edición/borrado y un trigger de base de datos bloquea `UPDATE` y `DELETE`.
+
+La actualización del estado del reporte, la visibilidad y el borrado lógico escriben el evento dentro de la misma transacción que el cambio original. Repetir una acción de visibilidad ya vigente no crea otro evento.
 
 #### Traducción de errores de Prisma
 

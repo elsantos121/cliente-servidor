@@ -5,7 +5,9 @@ import { prisma } from '../../src/db/prisma';
  * Al agregar un modelo nuevo, sumar su tabla a la lista.
  */
 export async function limpiarBase(): Promise<void> {
-  await prisma.$executeRawUnsafe('TRUNCATE TABLE usuarios, categorias, publicaciones, comentarios, reportes RESTART IDENTITY CASCADE');
+  await prisma.$executeRawUnsafe(
+    'TRUNCATE TABLE eventos_moderacion, usuarios, categorias, publicaciones, comentarios, reportes RESTART IDENTITY CASCADE',
+  );
 }
 
 export { prisma };

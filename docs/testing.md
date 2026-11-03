@@ -456,3 +456,52 @@ Prueba manual en el navegador (`npm run dev` + `ng serve`, base `foro_dev`):
 - En una publicación de otra cuenta aparece "Reportar publicación" (antes "Denunciar").
 - `/ayuda` muestra las cinco secciones; `GET /api/publicaciones/9999` responde "Publicación inexistente".
 - "Cerrar sesión" → "Cerraste sesión." en la pantalla de login.
+
+## Contribuciones acordadas — HU-08 Ocultar durante revisión (2026-11-03)
+
+Rama `feature/HU-08-ocultamiento`, basada en `origin/develop` y separada de HU-07. Se registraron primero los criterios de aceptación; la migración `20261103163451_ocultar_publicaciones` añade `oculta_en` sin eliminar contenido existente.
+
+| Paso | Commit | Resultado |
+|---|---|---|
+| Criterios | `2a90803` | HU-08 acordada y documentada antes del código |
+| RED servicio / BDD | `94f6bd3` | pruebas para ocultar, restaurar, idempotencia y rechazo en rutas públicas |
+| RED endpoint | `3c7d900` | autorización y validación del endpoint de moderación |
+| GREEN servicio / migración | `cba87f4` | servicio de visibilidad y campo persistente |
+| GREEN endpoint | `74467f7` | `PATCH /api/publicaciones/:id/moderacion`, solo ADMIN |
+| RED / GREEN frontend | `ded6d81` / `0503314` | acción de ocultar y restaurar en el panel de reportes |
+| Integración | `backend/features/integracion.feature` | añade ocultar, verificar que no se lista y restaurar antes de eliminar |
+
+Verificación final de regresión en Windows (PostgreSQL local, base aislada `foro_hu08_test`):
+
+| Comando | Resultado real |
+|---|---|
+| backend `npm test` | **22 archivos / 168 pruebas pasadas** |
+| backend `npm run test:bdd` | **58 escenarios / 493 pasos pasados** |
+| backend `npm run typecheck` / `lint` / `build` | sin errores |
+| frontend `npx ng test --watch=false` | **13 archivos / 81 pruebas pasadas** |
+| frontend `npx ng build` | sin errores |
+
+La suite también verifica que las publicaciones ocultas no se listan ni admiten consultas, comentarios o denuncias públicas, que los reportes existentes se conservan y muestran `publicacion.ocultaEn`, y que solo ADMIN puede cambiar la visibilidad.
+
+## Contribuciones acordadas — HU-09 Historial y borrado lógico (2026-11-03)
+
+Rama `feature/HU-09-historial`, creada sobre HU-08 por dependencia. Los criterios y el escenario Gherkin precedieron a la implementación. La migración aditiva `20261103164712_historial_moderacion_borrado_logico` añade `eliminada_en`, `eventos_moderacion` y acciones tipadas; un trigger impide actualizar o borrar eventos.
+
+| Paso | Evidencia |
+|---|---|
+| RED BDD | 3 escenarios con pasos de historial indefinidos; los pasos HU-08 existentes funcionaron |
+| RED servicio / API | no existía el servicio/ruta; `GET /api/moderacion/historial` devolvía `404` en los casos nuevos |
+| RED frontend | compilación Angular fallaba porque todavía no existía `AdminHistorial` |
+| GREEN | eventos de reporte/visibilidad/eliminación dentro de sus transacciones; borrado lógico que conserva reportes y comentarios; endpoint y panel ADMIN con filtros |
+
+Regresión completa en Windows, Node v22.18.0 y PostgreSQL local aislado (`foro_hu08_test`):
+
+| Comando | Resultado real |
+|---|---|
+| backend `npm test` | **24 archivos / 176 pruebas pasadas** |
+| backend `npm run test:bdd` | **61 escenarios / 548 pasos pasados** |
+| backend `npm run typecheck` / `lint` / `build` | sin errores |
+| frontend `npx ng test --watch=false` | **14 archivos / 84 pruebas pasadas** |
+| frontend `npx ng build` | sin errores; chunk diferido `admin-historial` 4,59 kB |
+
+Las pruebas confirman que la eliminación no destruye publicación, comentarios ni reportes; esos recursos dejan de estar disponibles en rutas públicas y los reportes retirados salen de la cola activa. También comprueban orden y filtros del historial, permisos `401/403/404` y que la base de datos rechaza `UPDATE`/`DELETE` sobre eventos de auditoría.

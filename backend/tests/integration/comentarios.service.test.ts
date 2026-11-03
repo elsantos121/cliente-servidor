@@ -57,11 +57,11 @@ describe('comentarios.service (HU-04)', () => {
     expect(await listarComentarios(publicacionId)).toEqual([]);
   });
 
-  it('al eliminar la publicación se eliminan sus comentarios (cascada)', async () => {
+  it('al eliminar lógicamente la publicación se conservan sus comentarios', async () => {
     await comentar(publicacionId, betoId, { contenido: 'Se va a borrar' });
 
     await eliminarPublicacion(publicacionId, { id: anaId, rol: 'ESTUDIANTE' });
 
-    expect(await prisma.comentario.count()).toBe(0);
+    expect(await prisma.comentario.count({ where: { publicacionId } })).toBe(1);
   });
 });

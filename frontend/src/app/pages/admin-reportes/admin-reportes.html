@@ -1,5 +1,6 @@
 <section class="panel" aria-labelledby="titulo-reportes">
   <h1 id="titulo-reportes">Reportes</h1>
+  <a routerLink="/admin/historial">Historial de moderación</a>
 
   <div class="filtros" role="group" aria-label="Estado de los reportes">
     @for (opcion of estados; track opcion) {
@@ -38,6 +39,20 @@
             Reportado por {{ reporte.autor.nombre }} ·
             <time [attr.datetime]="reporte.creadoEn">{{ reporte.creadoEn | date: 'd/M/yyyy HH:mm' }}</time>
           </p>
+
+          @if (reporte.publicacion.ocultaEn) {
+            <p class="meta">Oculta durante revisión</p>
+          }
+          <div class="acciones">
+            <button
+              type="button"
+              class="boton boton--secundario"
+              [disabled]="procesando() === reporte.id"
+              (click)="cambiarVisibilidad(reporte)"
+            >
+              {{ reporte.publicacion.ocultaEn ? 'Restaurar publicación' : 'Ocultar durante revisión' }}
+            </button>
+          </div>
 
           @if (reporte.estado === 'PENDIENTE') {
             <div class="acciones">

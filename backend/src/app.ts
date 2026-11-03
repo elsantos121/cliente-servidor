@@ -7,6 +7,7 @@ import { categoriasRouter } from './modules/categorias';
 import { comentariosRouter } from './modules/comentarios';
 import { publicacionesRouter } from './modules/publicaciones';
 import { denunciasRouter, moderacionRouter } from './modules/reportes';
+import { historialRouter } from './modules/moderacion';
 import { usuariosRouter } from './modules/usuarios';
 
 /**
@@ -22,6 +23,7 @@ const modulos: Array<{ ruta: string; router: Router }> = [
   { ruta: '/api/publicaciones/:publicacionId/comentarios', router: comentariosRouter }, // HU-04
   { ruta: '/api/publicaciones/:publicacionId/reportes', router: denunciasRouter }, // HU-05
   { ruta: '/api/reportes', router: moderacionRouter }, // HU-06b
+  { ruta: '/api/moderacion', router: historialRouter }, // HU-09
 ];
 
 export function crearApp() {

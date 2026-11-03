@@ -56,5 +56,11 @@ export const routes: Routes = [
     canActivate: [requiereSesion('ADMIN')],
     loadComponent: () => import('./pages/admin-reportes/admin-reportes').then((m) => m.AdminReportes),
   },
+  {
+    path: 'admin/historial',
+    title: 'Historial de moderación · Foro universitario',
+    canActivate: [requiereSesion('ADMIN')],
+    loadComponent: () => import('./pages/admin-historial/admin-historial').then((m) => m.AdminHistorial),
+  },
   { path: '**', redirectTo: '' },
 ];

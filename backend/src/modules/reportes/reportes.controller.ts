@@ -15,6 +15,6 @@ export const listar: RequestHandler = async (req, res) => {
 };
 
 export const cambiarEstado: RequestHandler = async (req, res) => {
-  const reporte = await reportesService.cambiarEstado(idDeRuta(req.params.id, 'Reporte'), req.body);
+  const reporte = await reportesService.cambiarEstado(idDeRuta(req.params.id, 'Reporte'), req.body, req.usuario!.id);
   res.json({ reporte });
 };

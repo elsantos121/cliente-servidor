@@ -1,0 +1,41 @@
+.panel {
+  margin: 0 auto;
+  max-width: 56rem;
+  padding: 1.5rem;
+}
+
+.filtros {
+  align-items: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.filtros label {
+  font-weight: 600;
+}
+
+.filtros input,
+.filtros select,
+.filtros button {
+  min-height: 2.5rem;
+}
+
+.eventos {
+  display: grid;
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+}
+
+.evento {
+  border: 1px solid #d5d9de;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.evento h2 {
+  font-size: 1.1rem;
+  margin-top: 0;
+}

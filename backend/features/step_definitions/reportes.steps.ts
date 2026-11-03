@@ -108,5 +108,8 @@ Then('el reporte de {string} queda en estado {string}', async function (titulo: 
 });
 
 Then('no hay reportes pendientes', async function () {
-  assert.equal(await prisma.reporte.count({ where: { estado: 'PENDIENTE' } }), 0);
+  assert.equal(
+    await prisma.reporte.count({ where: { estado: 'PENDIENTE', publicacion: { eliminadaEn: null } } }),
+    0,
+  );
 });

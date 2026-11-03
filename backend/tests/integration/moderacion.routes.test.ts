@@ -50,7 +50,7 @@ describe('GET /api/reportes (HU-06b)', () => {
         id: reporteId,
         motivo: 'Contenido ofensivo',
         estado: 'PENDIENTE',
-        publicacion: { id: publicacionId, titulo: 'Publicación dudosa' },
+        publicacion: { id: publicacionId, titulo: 'Publicación dudosa', ocultaEn: null },
         autor: expect.objectContaining({ nombre: 'Beto' }),
       }),
     ]);
@@ -107,10 +107,12 @@ describe('PATCH /api/reportes/:id (HU-06b)', () => {
 });
 
 describe('DELETE /api/publicaciones/:id por un administrador (HU-06b)', () => {
-  it('elimina la publicación denunciada y sus reportes → 204', async () => {
+  it('elimina lógicamente la publicación denunciada y conserva sus reportes → 204', async () => {
     const res = await request(app).delete(`/api/publicaciones/${publicacionId}`).set('Authorization', `Bearer ${tokenAdmin}`);
 
     expect(res.status).toBe(204);
     expect((await listar(tokenAdmin)).body.reportes).toEqual([]);
+    expect(await prisma.reporte.count({ where: { publicacionId } })).toBe(1);
+    expect(await prisma.publicacion.count({ where: { id: publicacionId, eliminadaEn: { not: null } } })).toBe(1);
   });
 });

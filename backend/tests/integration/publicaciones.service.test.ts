@@ -108,12 +108,12 @@ describe('publicaciones.service · editar y eliminar (HU-03)', () => {
     await expect(editarPublicacion(9999, ana, datos(matematica))).rejects.toMatchObject({ status: 404 });
   });
 
-  it('el autor elimina su publicación', async () => {
+  it('el autor elimina lógicamente su publicación', async () => {
     const { id } = await crearPublicacion(ana.id, datos(matematica));
 
     await eliminarPublicacion(id, ana);
 
-    expect(await prisma.publicacion.count()).toBe(0);
+    expect(await prisma.publicacion.count({ where: { id, eliminadaEn: { not: null } } })).toBe(1);
   });
 
   it('un administrador elimina una publicación ajena', async () => {
@@ -121,7 +121,7 @@ describe('publicaciones.service · editar y eliminar (HU-03)', () => {
 
     await eliminarPublicacion(id, admin);
 
-    expect(await prisma.publicacion.count()).toBe(0);
+    expect(await prisma.publicacion.count({ where: { id, eliminadaEn: { not: null } } })).toBe(1);
   });
 
   it('otro estudiante no puede eliminarla (403)', async () => {
