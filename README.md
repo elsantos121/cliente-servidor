@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/elsantos121/cliente-servidor/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/elsantos121/cliente-servidor/actions/workflows/ci.yml)
 
-Foro para estudiantes universitarios: publicaciones por categoría, comentarios, denuncias y un panel de moderación para administradores. Aplicación cliente-servidor (Angular + API REST en Express + PostgreSQL) construida con **Programación Extrema (XP)**, TDD y BDD.
+Foro para estudiantes universitarios: publicaciones por categoría, comentarios, denuncias, búsqueda y un panel de moderación para administradores. Aplicación cliente-servidor (Angular + API REST en Express + PostgreSQL) construida con **Programación Extrema (XP)**, TDD y BDD.
 
 ## Consigna
 
@@ -27,6 +27,7 @@ Qué cubre esta versión y qué no está en [Limitaciones](#limitaciones).
 | HU-04 Comentarios | leer y escribir comentarios en una publicación | todos / autenticado |
 | HU-05 Denuncias | denunciar una publicación una sola vez | autenticado |
 | HU-06b Moderación | revisar reportes, marcarlos resueltos o descartados, eliminar la publicación denunciada | `ADMIN` |
+| HU-07 Búsqueda | buscar publicaciones por texto en el título o el contenido, combinable con el filtro por categoría | todos |
 
 El primer administrador se crea con el seed (`npm run prisma:seed`); nadie puede volverse administrador desde la aplicación. Detalle y criterios de aceptación: [docs/historias-usuario.md](docs/historias-usuario.md).
 
@@ -94,7 +95,7 @@ Prefijo `/api`. Errores con formato uniforme: `{ "error": { "codigo", "mensaje",
 | POST | `/auth/login` | público |
 | GET | `/usuarios/me` | autenticado |
 | GET · POST | `/categorias` | público · `ADMIN` |
-| GET | `/publicaciones?categoriaId=` · `/publicaciones/:id` | público |
+| GET | `/publicaciones?categoriaId=&q=` · `/publicaciones/:id` | público |
 | POST | `/publicaciones` | autenticado |
 | PUT | `/publicaciones/:id` | autor |
 | DELETE | `/publicaciones/:id` | autor o `ADMIN` |
@@ -102,6 +103,8 @@ Prefijo `/api`. Errores con formato uniforme: `{ "error": { "codigo", "mensaje",
 | POST | `/publicaciones/:id/reportes` | autenticado |
 | GET | `/reportes?estado=` | `ADMIN` |
 | PATCH | `/reportes/:id` | `ADMIN` |
+
+El parámetro `q` (HU-07) busca sin distinguir mayúsculas en el título y el contenido; si se combina con `categoriaId`, se aplican ambos filtros. Un `q` vacío devuelve el listado completo.
 
 Cuerpos, respuestas y códigos de error de cada endpoint: [docs/arquitectura.md](docs/arquitectura.md#endpoints-implementados).
 
@@ -137,6 +140,7 @@ Decisiones tomadas por el equipo para mantener la v1 simple, y lo que queda pend
 | Procesamiento paralelo / multihilos / cluster | **No incluido**, por decisión del equipo. La API atiende solicitudes concurrentes con el modelo asincrónico de Node.js (un proceso, E/S no bloqueante) y el pool de conexiones de Prisma; la integridad ante solicitudes simultáneas la aseguran las restricciones de la base (probado en `duplicados.concurrentes.test.ts`). No hay workers ni cluster. |
 | Gestión de sesión | Un único JWT con vencimiento (2 h por defecto). Sin refresh tokens ni revocación: al vencer, se vuelve a iniciar sesión. |
 | Moderación | Eliminar una publicación borra en cascada sus comentarios y reportes; no queda historial (borrado lógico: posible feature futura). |
+| Búsqueda | Búsqueda simple por coincidencia de texto (`contains`). Sin búsqueda de texto completo, ranking ni paginación de resultados. |
 | Fuera de alcance | Chat, mensajes privados, notificaciones, archivos adjuntos, votos y reputación. |
 | Producción | Faltaría HTTPS, rate limiting en el login, cabeceras de seguridad y rotación de secretos. |
 | Versiones | Angular 21 (Angular 22 exige Node 22.22.3+) y Prisma 6 (Prisma 7 trae cambios incompatibles); la CLI de Prisma 6 tiene 3 avisos de `deepmerge-ts` que no afectan a la API. |
