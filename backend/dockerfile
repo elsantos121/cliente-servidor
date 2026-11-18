@@ -1,0 +1,23 @@
+# Etapa 1: Construcción
+FROM node:22-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npx prisma generate
+RUN npm run build
+
+# Etapa 2: Producción
+FROM node:22-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+COPY package*.json ./
+RUN npm ci --omit=dev
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/prisma ./prisma
+# Instalamos PM2 globalmente para el modo cluster
+RUN npm install -g pm2
+
+EXPOSE 3000
+# Usamos PM2 en modo runtime para que Docker no cierre el contenedor
+CMD ["pm2-runtime", "ecosystem.config.js"]
