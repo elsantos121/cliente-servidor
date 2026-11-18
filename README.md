@@ -33,10 +33,6 @@ El primer administrador se crea con el seed (`npm run prisma:seed`); nadie puede
 
 ## Arquitectura
 
-```
-Navegador (Angular 21)  ──HTTP/JSON + JWT──▶  API REST (Express 5 + TypeScript)  ──Prisma──▶  PostgreSQL
-```
-
 - El **frontend** presenta datos y envía solicitudes; ocultar un botón es solo comodidad.
 - El **backend** concentra reglas de negocio, validación (Zod) y autorización por rol y por autor.
 - **PostgreSQL** asegura integridad con claves foráneas y restricciones `UNIQUE` (los duplicados se detectan en la base, incluso con solicitudes simultáneas).
@@ -52,6 +48,8 @@ Cada recurso es un módulo en `backend/src/modules/<nombre>/` (rutas, controlado
 | Datos | PostgreSQL 16, Prisma 6 (migraciones versionadas) |
 | Pruebas | Vitest + Supertest (unitarias e integración), Cucumber.js en español (BDD) |
 | CI | GitHub Actions con PostgreSQL efímero |
+| Concurrencia | PM2 en modo cluster (procesos worker) |
+| Contenedor | Docker + Docker Compose |
 
 ## Instalación en Windows
 
@@ -67,6 +65,7 @@ npm install
 npx prisma migrate deploy
 npm run prisma:seed      # crea el administrador inicial
 cd ..\frontend
+npm install
 npm install
 ```
 
